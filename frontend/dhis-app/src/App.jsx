@@ -72,10 +72,8 @@ export default function App() {
   const barData = analysis
     ? Object.entries(analysis.disease_breakdown)
         .sort((a,b) => b[1]-a[1])
-        .slice(0, 14)
-        .map(([name, val]) => ({ name, cases: val }))
+        .map(([name, val]) => ({ name: name.trim(), cases: val }))
     : []
-
   const catData = analysis
     ? Object.entries(analysis.category_summary).map(([name, val]) => ({ name, value: val }))
     : []
@@ -132,15 +130,28 @@ export default function App() {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18, marginBottom:18 }}>
             <div style={{ background:"#fff", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#1a2236" }}>Disease Breakdown (Top 14)</div>
-              <ResponsiveContainer width="100%" height={360}>
-                <BarChart data={barData} layout="vertical" margin={{ left:20, right:30, top:4, bottom:4 }}>
-                  <XAxis type="number" tick={{ fontSize:11 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
-                  <YAxis dataKey="name" type="category" width={145} tick={{ fontSize:12 }} />
-                  <Tooltip formatter={v => v.toLocaleString()} />
-                  <Bar dataKey="cases" radius={[0,6,6,0]} label={{ position:"right", fontSize:11, formatter: v => v.toLocaleString() }}>
-                    {barData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Bar>
-                </BarChart>
+              <ResponsiveContainer width="100%" height={600}>
+                <BarChart data={barData} layout="vertical" margin={{ left:10, right:60, top:4, bottom:4 }}>
+  <XAxis type="number" tick={{ fontSize:11 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
+  <YAxis dataKey="name" type="category" width={240} tick={{ fontSize:11 }} />
+  <Tooltip
+    cursor={{ fill:"rgba(55,138,221,0.08)" }}
+    content={({ active, payload }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div style={{ background:"#1a2236", padding:"10px 16px", borderRadius:10, color:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{payload[0].payload.name}</div>
+            <div style={{ fontSize:13, color:"#93c5fd" }}>Total Cases: {payload[0].value.toLocaleString()}</div>
+          </div>
+        )
+      }
+      return null
+    }}
+  />
+  <Bar dataKey="cases" radius={[0,6,6,0]} label={{ position:"right", fontSize:11, formatter: v => v.toLocaleString() }}>
+    {barData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+  </Bar>
+</BarChart>
               </ResponsiveContainer>
             </div>
 
@@ -167,7 +178,17 @@ export default function App() {
     labelLine={{ stroke:"#aaa", strokeWidth:1.5 }}>
     {catData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
   </Pie>
-  <Tooltip formatter={v => v.toLocaleString()} />
+  <Tooltip cursor={{ fill: "rgba(0,0,0,0.05)" }} content={({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background:"#1a2236", padding:"8px 14px", borderRadius:8, color:"#fff", boxShadow:"0 2px 8px rgba(0,0,0,0.2)" }}>
+        <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{payload[0].payload.name}</div>
+        <div style={{ fontSize:13, color:"#93c5fd" }}>Cases: {payload[0].value.toLocaleString()}</div>
+      </div>
+    )
+  }
+  return null
+}} />
 </PieChart>
               </ResponsiveContainer>
             </div>
