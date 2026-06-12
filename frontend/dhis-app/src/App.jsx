@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, Legend
 } from "recharts"
 
-const API = "http://127.0.0.1:8000"
+const API = "https://dhis-backend.onrender.com"
 const COLORS = ["#378ADD","#1D9E75","#EF9F27","#D85A30","#7F77DD","#993556","#639922","#BA7517","#D4537E","#0F6E56","#E24B4A","#533AB7"]
 const ADMIN_PASSWORD = "dhis2025"
 
