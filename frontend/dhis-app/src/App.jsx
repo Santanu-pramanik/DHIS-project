@@ -120,7 +120,7 @@ export default function App() {
         <>
           <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
             {kpi("Total Cases", analysis.total_cases?.toLocaleString())}
-            {kpi("Top Disease", analysis.top_disease, "#D85A30", `${analysis.top_count?.toLocaleString()} cases`)}
+            {kpi("Top Disease", analysis.top_disease, "#D85A30", `${barData[0]?.cases?.toLocaleString()} cases`)}
             {kpi("Total Hospitals", analysis.total_hospitals, "#1D9E75")}
             {kpi("Doctor Shortage", analysis.shortage > 0 ? `${analysis.shortage} short` : "Fully Staffed",
               analysis.shortage > 0 ? "#e24b4a" : "#1D9E75",
