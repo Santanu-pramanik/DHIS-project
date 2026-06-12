@@ -5,6 +5,8 @@ import {
   PieChart, Pie, Cell, Legend
 } from "recharts"
 
+import logo from "./assets/logo.png"
+
 const API = "https://dhis-backend.onrender.com"
 const COLORS = ["#378ADD","#1D9E75","#EF9F27","#D85A30","#7F77DD","#993556","#639922","#BA7517","#D4537E","#0F6E56","#E24B4A","#533AB7"]
 const ADMIN_PASSWORD = "dhis2026"
@@ -79,12 +81,19 @@ export default function App() {
     : []
 
   const navbar = (
-    <div style={{ background:"#1a2236", padding:"0 32px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56, position:"sticky", top:0, zIndex:100 }}>
-      <span style={{ color:"#fff", fontWeight:700, fontSize:16 }}>🏥 DHIS — District Health Intelligence System</span>
-      <div style={{ display:"flex", gap:6 }}>
+    <div style={{ background:"#1a2236", padding:"0 32px", display:"flex", alignItems:"center", justifyContent:"space-between", height:90, position:"sticky", top:0, zIndex:100 , boxShadow:"0 2px 10px rgba(0,0,0,0.15)", position:"relative"}}>
+      <span style={{ color:"#fff", fontWeight:700, fontSize:16 }}>
+      <div style={{ display:"flex", alignItems:"center"}}>
+        <img src={logo} alt="Logo" style={{ height:75, weight:75,objectFit:"contain"}} />
+      </div>
+      </span>
+      <div style={{position:"absolute", left:"45%", transform:"translateX(-50%)", color:"#fff", fontSize:"36px", fontWeight:"800", letterSpacing:"3px", textTransform:"uppercase", fontFamily:"Poppins, sans-serif", textShadow:"0 0 10px rgba(55,138,221,0.6)"}}>
+      District Health Intelligence System
+      </div>
+      <div style={{ display:"flex", gap:10, alignItems:"center" }}>
         {["dashboard","admin"].map(p => (
           <button key={p} onClick={() => setPage(p)}
-            style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
+            style={{ padding:"8px 22px", borderRadius:10, border:"none", cursor:"pointer", fontWeight:600, fontSize:14,transition:"all 0.3s",
               background: page===p ? "#378ADD" : "transparent", color: page===p ? "#fff" : "#aac4e0" }}>
             {p === "dashboard" ? "Dashboard" : "Admin Panel"}
           </button>
