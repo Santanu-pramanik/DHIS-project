@@ -290,7 +290,16 @@ export default function App() {
           <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
             <KPI label="Total Cases" value={analysis.total_cases?.toLocaleString()} />
             <KPI label="Top Disease" value={analysis.top_disease} color="#D85A30" sub={`${barData[0]?.cases?.toLocaleString()} cases`} />
-            <KPI label="Total Hospitals" value={analysis.total_hospitals} color="#1D9E75" />
+            <div
+  onClick={() => setPage("hospitals")}
+  style={{ cursor: "pointer" }}
+>
+  <KPI
+    label="Total Hospitals"
+    value={analysis.total_hospitals}
+    color="#1D9E75"
+  />
+</div>
             <KPI label="Doctor Shortage"
               value={analysis.shortage > 0 ? `${analysis.shortage} short` : "Fully Staffed"}
               color={analysis.shortage > 0 ? "#e24b4a" : "#1D9E75"}
@@ -535,6 +544,7 @@ export default function App() {
       {navbar}
       {page === "dashboard" && dashboardPage}
       {page === "admin" && !adminLoggedIn && loginPage}
+      {page === "hospitals" && hospitalsPage}
       {page === "admin" && adminLoggedIn && adminPage}
     </div>
   )
