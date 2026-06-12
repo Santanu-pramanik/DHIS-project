@@ -9,6 +9,8 @@ import {
   CheckCircle, XCircle, AlertTriangle, ChevronDown
 } from "lucide-react"
 
+import logo from "./assets/logo.png"
+
 const API = "https://dhis-backend.onrender.com"
 const COLORS = ["#378ADD","#1D9E75","#EF9F27","#D85A30","#7F77DD","#993556","#639922","#BA7517","#D4537E","#0F6E56","#E24B4A","#533AB7"]
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"]
