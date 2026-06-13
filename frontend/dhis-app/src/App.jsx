@@ -179,7 +179,7 @@ export default function App() {
       <div style={{ display:"flex", gap:6 }}>
         <button onClick={() => setPage("dashboard")}
           style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
-            background: page==="dashboard" ? "#378ADD" : "transparent", color: page==="dashboard" ? "#fff" : "#aac4e0",
+            background: currentPage==="app" && page==="dashboard" ? "#378ADD" : "transparent", color: page==="dashboard" ? "#fff" : "#aac4e0",
             display:"flex", alignItems:"center", gap:6 }}>
 
             <button onClick={() => setCurrentPage("landing")}
@@ -193,7 +193,7 @@ export default function App() {
         </button>
         <button onClick={() => setPage("admin")}
           style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
-            background: page==="admin" ? "#378ADD" : "transparent", color: page==="admin" ? "#fff" : "#aac4e0",
+            background: currentPage==="app" && page==="admin" ? "#378ADD" : "transparent", color: page==="admin" ? "#fff" : "#aac4e0",
             display:"flex", alignItems:"center", gap:6 }}>
           <ShieldCheck size={15} /> Admin Panel
         </button>
