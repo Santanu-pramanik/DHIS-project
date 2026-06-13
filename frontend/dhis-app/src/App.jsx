@@ -264,7 +264,7 @@ export default function App() {
               </ResponsiveContainer>
             </div>
 
-            <div style={{ background:"rgba(255,255,255,0.08)", backdropFilter:"blur(10px)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+            <div style={{ background:"#fff", borderRadius:14 }}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#1a2236" }}>Category Summary</div>
               <ResponsiveContainer width="100%" height={360}>
                 <PieChart>
