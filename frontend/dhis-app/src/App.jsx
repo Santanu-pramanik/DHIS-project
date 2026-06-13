@@ -204,8 +204,7 @@ export default function App() {
     <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, position:"sticky", top:56, background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)", zIndex:50, padding:"12px 0" }}>
       <span style={{ fontSize:13, color:"#333", fontWeight:600 }}>District:</span>
       <select value={selectedDistrict || ""} onChange={e => setSelectedDistrict(Number(e.target.value))}
-        style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontSize:14, background:"#fff", cursor:"pointer", minWidth:160 }}>
-        {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontSize:14, background:"#fff", color:"#1a2236", cursor:"pointer", minWidth:160 }}>        {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
       </select>
       {analysis && <span style={{ fontSize:13, color:"#555" }}>Total: <b style={{ color:"#1a2236" }}>{analysis.total_cases?.toLocaleString()}</b> cases</span>}
     </div>

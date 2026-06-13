@@ -182,3 +182,8 @@
     border-right-color: var(--border);
   }
 }
+
+select option {
+  background: #ffffff;
+  color: #1a2236;
+}
