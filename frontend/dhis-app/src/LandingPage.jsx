@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import { Activity, LayoutDashboard, ShieldCheck, ArrowRight, MapPin } from "lucide-react"
+import WestBengalMap from "./assets/west-bengal.svg";
 
-const WB_PATH = "M263,57 L267,62 L272,60 L278,65 L282,72 L279,78 L285,83 L290,80 L295,85 L292,92 L296,98 L300,105 L298,112 L293,118 L295,125 L292,132 L288,138 L290,145 L287,152 L283,158 L280,165 L276,172 L272,178 L268,185 L265,192 L261,198 L257,205 L252,210 L247,215 L242,218 L237,222 L232,225 L227,228 L222,230 L217,228 L212,225 L208,220 L204,215 L200,210 L197,204 L194,198 L191,192 L189,186 L187,180 L185,174 L184,168 L183,162 L182,156 L182,150 L183,144 L184,138 L186,132 L188,126 L191,120 L194,114 L198,109 L202,104 L207,100 L212,96 L217,92 L222,88 L227,84 L232,80 L237,76 L242,72 L247,68 L252,64 L257,60 L260,57 Z"
+const WB_PATH = "M290,58 L295,62 L300,68 L298,75 L302,80 L305,87 L302,93 L298,98 L300,105 L297,112 L293,118 L290,125 L292,132 L289,139 L285,145 L282,152 L278,158 L274,164 L270,170 L266,176 L261,181 L256,186 L250,190 L244,194 L238,198 L232,202 L226,205 L220,207 L214,208 L208,207 L202,205 L197,201 L192,197 L188,192 L184,186 L181,180 L179,174 L177,168 L176,162 L175,156 L175,150 L176,144 L177,138 L179,132 L181,126 L184,121 L187,115 L191,110 L195,105 L200,101 L205,97 L210,93 L215,89 L220,85 L225,81 L230,77 L235,73 L240,69 L245,65 L250,61 L255,58 L260,55 L265,53 L270,52 L275,52 L280,54 L285,56 Z"
 const DISTRICTS = [
-  { name:"Darjeeling", x:267, y:75 },
-  { name:"Kolkata", x:210, y:215 },
-  { name:"Howrah", x:200, y:210 },
-  { name:"Bardhaman", x:220, y:165 },
-  { name:"Midnapore", x:195, y:185 },
-  { name:"Murshidabad", x:235, y:130 },
-  { name:"Malda", x:245, y:100 },
+  { name:"Darjeeling", x:285, y:62 },
+  { name:"Malda", x:258, y:95 },
+  { name:"Murshidabad", x:238, y:125 },
+  { name:"Bardhaman", x:218, y:155 },
+  { name:"Kolkata", x:200, y:200 },
+  { name:"Howrah", x:192, y:195 },
+  { name:"Midnapore", x:185, y:175 },
 ]
 export default function LandingPage({ onNavigate }) {
   const [pulse, setPulse] = useState(0)
@@ -116,7 +117,7 @@ export default function LandingPage({ onNavigate }) {
           <div style={{ position:"absolute", width:420, height:420, borderRadius:"50%", border:"1px solid rgba(55,138,221,0.15)", animation:"none" }} />
           <div style={{ position:"absolute", width:340, height:340, borderRadius:"50%", border:"1px solid rgba(55,138,221,0.1)" }} />
 
-          <svg width="460" height="480" viewBox="170 50 145 195"
+          <svg width="460" height="480" viewBox="165 45 155 175"
             style={{ filter:"drop-shadow(0 0 30px rgba(55,138,221,0.3))", transform:`rotate(${mapRotate}deg)`, transition:"transform 0.1s ease" }}>
 
             {/* Map glow */}
