@@ -75,7 +75,9 @@ export default function LandingPage({ onNavigate }) {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
+        overflowY: "auto",
+        overflowX: "hidden",
         background:
           "linear-gradient(135deg, #0d1526 0%, #1a2236 50%, #0d1f3c 100%)",
         fontFamily: "system-ui,sans-serif",
@@ -774,6 +776,163 @@ export default function LandingPage({ onNavigate }) {
           </div>
         </div>
       </div>
+      {/* Team Section */}
+      <div style={{padding: "60px 48px", background: "rgba(255,255,255,0.02)", borderTop: "none",}}>
+        <h2 style={{color: "#fff", textAlign: "center", fontSize: "36px", marginBottom: "10px",}}>
+         Meet Our Team
+        </h2>
+        <p style={{textAlign: "center", color: "#8ba8c8", marginBottom: "40px",}}>
+         District Health Intelligence System Development Team
+        </p>
+        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px",}}>
+    {/* Santanu */}
+      <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Santanu Pramanik</h3>
+      <p style={{ color: "#378ADD" }}>Project Lead & Full Stack Developer</p>
+      <ul>
+        <li>Project Architecture</li>
+        <li>Team Coordination</li>
+        <li>System Integration</li>
+        <li>API Development</li>
+      </ul>
+      <a
+        href="https://github.com/Santanu-pramanik"
+        target="_blank"
+        rel="noreferrer"
+        style={{ color: "#1D9E75" }}
+      >
+        GitHub Profile
+      </a>
+    </div>
+
+    {/* Rohit */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Rohit Kumar Sahu</h3>
+      <p style={{ color: "#378ADD" }}>Backend Developer & Database Engineer</p>
+        <ul>
+        <li>FastAPI Backend</li>
+        <li>Database Management</li>
+        <li>Data Modeling</li>
+      </ul>
+      <a
+        href="https://github.com/rohit69-star"
+        target="_blank"
+        rel="noreferrer"
+        style={{ color: "#1D9E75" }}
+      >
+        GitHub Profile
+      </a>
+    </div>
+
+    {/* Susmita */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Susmita Mandal</h3>
+      <p style={{ color: "#378ADD" }}>
+        Frontend Developer & Data Analyst
+      </p>
+       <ul>
+        <li>Dashboard UI Development</li>
+        <li>Admin Panel Design</li>
+        <li>Charts & Data Visualization</li>
+        <li>GitHub Collaboration</li>
+      </ul>
+      <a
+        href="https://github.com/Susmita75"
+        target="_blank"
+        rel="noreferrer"
+        style={{ color: "#1D9E75" }}
+      >
+        GitHub Profile
+      </a>
+    </div>
+    {/* Priyanka */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Priyanka Adak</h3>
+      <p style={{ color: "#378ADD" }}>UI/UX Designer & Frontend Developer</p>
+       <ul>
+        <li>User Interface Design</li>
+        <li>User Experience Planning</li>
+        <li>Frontend Components</li>
+      </ul>
+      <a
+        href="https://github.com/Priyanka-Adak"
+        target="_blank"
+        rel="noreferrer"
+        style={{ color: "#1D9E75" }}
+      >
+        GitHub Profile
+      </a>
+    </div>
+  </div>
+</div>
+{/* Footer */}
+<div
+  style={{
+    padding: "25px 48px",
+    borderTop: "1px solid rgba(55,138,221,0.15)",
+    background: "rgba(13,21,38,0.95)",
+    textAlign: "center",
+  }}
+>
+  <h3
+    style={{
+      color: "#fff",
+      marginBottom: "10px",
+      fontSize: "20px",
+    }}
+  >
+    District Health Intelligence System (DHIS)
+  </h3>
+
+  <p
+    style={{
+      color: "#8ba8c8",
+      fontSize: "14px",
+      marginBottom: "15px",
+    }}
+  >
+    Real-time health monitoring and disease outbreak tracking system for
+    West Bengal.
+  </p>
+
+  <p
+    style={{
+      color: "#5b8fc9",
+      fontSize: "12px",
+      margin: 0,
+    }}
+  >
+    © 2026 DHIS Project Team. All Rights Reserved.
+  </p>
+    </div>
     </div>
   );
 }
