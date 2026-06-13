@@ -74,5 +74,23 @@ def get_analysis(district_id: int):
 
 @app.post("/cases/add")
 def add_case(data: dict):
+    existing = supabase.table("disease_cases")\
+        .select("*")\
+        .eq("district_id", data.get("district_id"))\
+        .eq("disease_type", data.get("disease_type"))\
+        .eq("month", data.get("month"))\
+        .eq("year", data.get("year"))\
+        .execute()
+    
+    if existing.data:
+        # Already exists — update case count by adding
+        old_count = existing.data[0]["case_count"]
+        new_count = old_count + data.get("case_count", 0)
+        res = supabase.table("disease_cases")\
+            .update({"case_count": new_count})\
+            .eq("id", existing.data[0]["id"])\
+            .execute()
+        return {"message": f"Updated! {old_count} + {data['case_count']} = {new_count}", "data": res.data}
+    
     res = supabase.table("disease_cases").insert(data).execute()
-    return res.data
+    return {"message": "Added successfully!", "data": res.data}
