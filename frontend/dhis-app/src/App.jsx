@@ -181,6 +181,14 @@ export default function App() {
           style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
             background: page==="dashboard" ? "#378ADD" : "transparent", color: page==="dashboard" ? "#fff" : "#aac4e0",
             display:"flex", alignItems:"center", gap:6 }}>
+
+            <button onClick={() => setCurrentPage("landing")}
+  style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
+    background:"transparent", color:"#aac4e0",
+    display:"flex", alignItems:"center", gap:6 }}>
+  <Activity size={15} /> Home
+</button>
+
           <LayoutDashboard size={15} /> Dashboard
         </button>
         <button onClick={() => setPage("admin")}
