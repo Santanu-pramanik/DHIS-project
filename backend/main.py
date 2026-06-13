@@ -47,7 +47,6 @@ def get_analysis(district_id: int):
     total_cases = int(df["case_count"].sum())
     top_disease = df.loc[df["case_count"].idxmax(), "disease_type"]
     top_count = int(df["case_count"].max())
-
     category_summary = df.groupby("category")["case_count"].sum().to_dict()
 
     merged = df.merge(req_df, on="disease_type", how="left")
@@ -74,5 +73,49 @@ def get_analysis(district_id: int):
 
 @app.post("/cases/add")
 def add_case(data: dict):
+    existing = supabase.table("disease_cases")\
+        .select("*")\
+        .eq("district_id", data.get("district_id"))\
+        .eq("disease_type", data.get("disease_type"))\
+        .eq("month", data.get("month"))\
+        .eq("year", data.get("year"))\
+        .execute()
+
+    if existing.data:
+        old_count = existing.data[0]["case_count"]
+        new_count = old_count + data.get("case_count", 0)
+        res = supabase.table("disease_cases")\
+            .update({"case_count": new_count})\
+            .eq("id", existing.data[0]["id"])\
+            .execute()
+        return {"message": f"Updated! {old_count} + {data['case_count']} = {new_count}", "data": res.data}
+
     res = supabase.table("disease_cases").insert(data).execute()
+    return {"message": "Added successfully!", "data": res.data}
+
+@app.delete("/cases/{case_id}")
+def delete_case(case_id: int):
+    res = supabase.table("disease_cases").delete().eq("id", case_id).execute()
     return res.data
+
+@app.put("/cases/{case_id}")
+def update_case(case_id: int, data: dict):
+    res = supabase.table("disease_cases").update(data).eq("id", case_id).execute()
+    return res.data
+
+@app.get("/hospitals/{district_id}")
+def get_hospitals(district_id: int):
+    res = supabase.table("hospitals").select("*").eq("district_id", district_id).execute()
+    return res.data
+
+@app.get("/hospital/{hospital_id}/details")
+def get_hospital_details(hospital_id: int):
+    hospital = supabase.table("hospitals").select("*").eq("id", hospital_id).execute().data
+    departments = supabase.table("departments").select("*").eq("hospital_id", hospital_id).execute().data
+    doctors = supabase.table("doctors").select("*").eq("hospital_id", hospital_id).execute().data
+
+    return {
+        "hospital": hospital[0] if hospital else {},
+        "departments": departments,
+        "doctors": doctors
+    }
