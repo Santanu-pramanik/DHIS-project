@@ -239,8 +239,11 @@ export default function App() {
           </div>
 
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18, marginBottom:18 }}>
-            <div style={{ background:"#fff", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-              <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#1a2236" }}>Disease Breakdown</div>
+            <div style={{ background:"#060202", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+  <div style={{ fontSize:15, fontWeight:700, color:"#1a2236" }}>Disease Breakdown</div>
+  <div style={{ fontSize:12, color:"#888" }}>Total: <b style={{ color:"#378ADD" }}>{barData.reduce((a,b) => a + b.cases, 0).toLocaleString()}</b> cases</div>
+</div>
               <ResponsiveContainer width="100%" height={Math.max(400, barData.length * 35)}>
                 <BarChart data={barData} layout="vertical" margin={{ left:10, right:60, top:4, bottom:4 }}>
                   <XAxis type="number" tick={{ fontSize:11 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
@@ -261,7 +264,7 @@ export default function App() {
               </ResponsiveContainer>
             </div>
 
-            <div style={{ background:"#fff", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+            <div style={{ background:"#fff", borderRadius:14 }}>
               <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#1a2236" }}>Category Summary</div>
               <ResponsiveContainer width="100%" height={360}>
                 <PieChart>
