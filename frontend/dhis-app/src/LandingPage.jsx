@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import { Activity, LayoutDashboard, ShieldCheck, ArrowRight, MapPin } from "lucide-react"
 
-const WB_PATH = "M 220 80 L 240 75 L 265 82 L 280 95 L 290 115 L 285 135 L 295 150 L 305 165 L 300 185 L 288 200 L 275 210 L 260 220 L 245 235 L 230 245 L 215 250 L 200 248 L 185 240 L 175 228 L 168 215 L 162 200 L 158 185 L 160 170 L 155 158 L 148 145 L 150 130 L 158 118 L 168 105 L 180 95 L 195 85 Z"
-
+const WB_PATH = "M263,57 L267,62 L272,60 L278,65 L282,72 L279,78 L285,83 L290,80 L295,85 L292,92 L296,98 L300,105 L298,112 L293,118 L295,125 L292,132 L288,138 L290,145 L287,152 L283,158 L280,165 L276,172 L272,178 L268,185 L265,192 L261,198 L257,205 L252,210 L247,215 L242,218 L237,222 L232,225 L227,228 L222,230 L217,228 L212,225 L208,220 L204,215 L200,210 L197,204 L194,198 L191,192 L189,186 L187,180 L185,174 L184,168 L183,162 L182,156 L182,150 L183,144 L184,138 L186,132 L188,126 L191,120 L194,114 L198,109 L202,104 L207,100 L212,96 L217,92 L222,88 L227,84 L232,80 L237,76 L242,72 L247,68 L252,64 L257,60 L260,57 Z"
 const DISTRICTS = [
-  { name:"Kolkata", x:230, y:210 },
-  { name:"Howrah", x:210, y:205 },
-  { name:"Darjeeling", x:248, y:88 },
-  { name:"Bardhaman", x:205, y:165 },
-  { name:"Midnapore", x:180, y:200 },
+  { name:"Darjeeling", x:267, y:75 },
+  { name:"Kolkata", x:210, y:215 },
+  { name:"Howrah", x:200, y:210 },
+  { name:"Bardhaman", x:220, y:165 },
+  { name:"Midnapore", x:195, y:185 },
+  { name:"Murshidabad", x:235, y:130 },
+  { name:"Malda", x:245, y:100 },
 ]
-
 export default function LandingPage({ onNavigate }) {
   const [pulse, setPulse] = useState(0)
   const [hoveredDistrict, setHoveredDistrict] = useState(null)
@@ -116,7 +116,7 @@ export default function LandingPage({ onNavigate }) {
           <div style={{ position:"absolute", width:420, height:420, borderRadius:"50%", border:"1px solid rgba(55,138,221,0.15)", animation:"none" }} />
           <div style={{ position:"absolute", width:340, height:340, borderRadius:"50%", border:"1px solid rgba(55,138,221,0.1)" }} />
 
-          <svg width="460" height="480" viewBox="100 60 250 220"
+          <svg width="460" height="480" viewBox="170 50 145 195"
             style={{ filter:"drop-shadow(0 0 30px rgba(55,138,221,0.3))", transform:`rotate(${mapRotate}deg)`, transition:"transform 0.1s ease" }}>
 
             {/* Map glow */}
