@@ -1,3 +1,4 @@
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -75,7 +76,9 @@ export default function LandingPage({ onNavigate }) {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
+        overflowY: "auto",
+        overflowX: "hidden",
         background:
           "linear-gradient(135deg, #0d1526 0%, #1a2236 50%, #0d1f3c 100%)",
         fontFamily: "system-ui,sans-serif",
@@ -774,6 +777,180 @@ export default function LandingPage({ onNavigate }) {
           </div>
         </div>
       </div>
+      {/* Team Section */}
+      <div style={{padding: "60px 48px", background: "rgba(255,255,255,0.02)", borderTop: "none",}}>
+        <h2 style={{color: "#fff", textAlign: "center", fontSize: "36px", marginBottom: "10px",}}>
+         Meet Our Team
+        </h2>
+        <p style={{textAlign: "center", color: "#8ba8c8", marginBottom: "40px",}}>
+         District Health Intelligence System Development Team
+        </p>
+        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px",}}>
+    {/* Santanu */}
+      <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Santanu Pramanik</h3>
+      <p style={{ color: "#378ADD" }}>Project Lead & Full Stack Developer</p>
+      <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Manages the complete project </li>
+        <li>Team Coordination</li>
+        <li>Backend development</li>
+        <li>Architecture tasks</li>
+      </ul>
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Santanu-pramanik" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
+      </a>
+      <a href=" https://www.linkedin.com/in/santanu-pramanik-290b66229" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
+
+    {/* Rohit */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Rohit Kumar Sahu</h3>
+      <p style={{ color: "#378ADD" }}> Data Engineer</p>
+        <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Managing all data-centric operations including sourcing</li>
+        <li>Data Cleaning</li>
+        <li>analyzing health datasets to achieve project objectives.</li>
+      </ul>
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/rohit69-star" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
+      </a>
+      <a href="https://www.linkedin.com/in/rohit-kumar-sahu-23a7b7331 " target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
+
+    {/* Susmita */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Susmita Mandal</h3>
+      <p style={{ color: "#378ADD" }}>
+        Project Manager 
+      </p>
+       <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Dashboard UI Development</li>
+        <li>Manages all aspects of the project's web page</li>
+        <li>Ensures data analysis to guide decisions.</li>
+        <li>GitHub Collaboration</li>
+      </ul>
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Susmita75" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
+      </a>
+      <a href="https://www.linkedin.com/in/susmita-mandal-0aa079278/" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
+
+    {/* Priyanka */}
+    <div
+      style={{
+        background: "rgba(26,34,54,0.85)",
+        padding: "20px",
+        borderRadius: "15px",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ color: "#fff" }}>Priyanka Adak</h3>
+      <p style={{ color: "#378ADD" }}>Frontend Developer</p>
+       <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Operates and manages the system's frontend, </li>
+        <li>Creates data analysis leads to interpret findings,</li>
+        <li>Generates schematic reports.</li>
+      </ul>
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Priyanka-Adak" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
+      </a>
+      <a href="https://www.linkedin.com/in/priyanka-adak-73abb2277" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+    </div>
+  </div>
+</div>
+{/* Footer */}
+<div
+  style={{
+    padding: "25px 48px",
+    borderTop: "1px solid rgba(55,138,221,0.15)",
+    background: "rgba(13,21,38,0.95)",
+    textAlign: "center",
+  }}
+>
+  <h3
+    style={{
+      color: "#fff",
+      marginBottom: "10px",
+      fontSize: "20px",
+    }}
+  >
+    District Health Intelligence System (DHIS)
+  </h3>
+
+  <p
+    style={{
+      color: "#8ba8c8",
+      fontSize: "14px",
+      marginBottom: "15px",
+    }}
+  >
+    Real-time health monitoring and disease outbreak tracking system for
+    West Bengal.
+  </p>
+
+  <p
+    style={{
+      color: "#5b8fc9",
+      fontSize: "12px",
+      margin: 0,
+    }}
+  >
+    © 2026 DHIS Project Team. All Rights Reserved.
+  </p>
+    </div>
     </div>
   );
 }
