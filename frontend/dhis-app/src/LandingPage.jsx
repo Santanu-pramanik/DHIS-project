@@ -1,3 +1,4 @@
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
@@ -796,21 +797,25 @@ export default function LandingPage({ onNavigate }) {
     >
       <h3 style={{ color: "#fff" }}>Santanu Pramanik</h3>
       <p style={{ color: "#378ADD" }}>Project Lead & Full Stack Developer</p>
-      <ul>
-        <li>Project Architecture</li>
+      <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Manages the complete project </li>
         <li>Team Coordination</li>
-        <li>System Integration</li>
-        <li>API Development</li>
+        <li>Backend development</li>
+        <li>Architecture tasks</li>
       </ul>
-      <a
-        href="https://github.com/Santanu-pramanik"
-        target="_blank"
-        rel="noreferrer"
-        style={{ color: "#1D9E75" }}
-      >
-        GitHub Profile
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Santanu-pramanik" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
       </a>
-    </div>
+      <a href=" https://www.linkedin.com/in/santanu-pramanik-290b66229" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
 
     {/* Rohit */}
     <div
@@ -822,21 +827,25 @@ export default function LandingPage({ onNavigate }) {
       }}
     >
       <h3 style={{ color: "#fff" }}>Rohit Kumar Sahu</h3>
-      <p style={{ color: "#378ADD" }}>Backend Developer & Database Engineer</p>
-        <ul>
-        <li>FastAPI Backend</li>
-        <li>Database Management</li>
-        <li>Data Modeling</li>
+      <p style={{ color: "#378ADD" }}> Data Engineer</p>
+        <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Managing all data-centric operations including sourcing</li>
+        <li>Data Cleaning</li>
+        <li>analyzing health datasets to achieve project objectives.</li>
       </ul>
-      <a
-        href="https://github.com/rohit69-star"
-        target="_blank"
-        rel="noreferrer"
-        style={{ color: "#1D9E75" }}
-      >
-        GitHub Profile
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/rohit69-star" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
       </a>
-    </div>
+      <a href="https://www.linkedin.com/in/rohit-kumar-sahu-23a7b7331 " target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
 
     {/* Susmita */}
     <div
@@ -849,23 +858,28 @@ export default function LandingPage({ onNavigate }) {
     >
       <h3 style={{ color: "#fff" }}>Susmita Mandal</h3>
       <p style={{ color: "#378ADD" }}>
-        Frontend Developer & Data Analyst
+        Project Manager 
       </p>
-       <ul>
+       <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
         <li>Dashboard UI Development</li>
-        <li>Admin Panel Design</li>
-        <li>Charts & Data Visualization</li>
+        <li>Manages all aspects of the project's web page</li>
+        <li>Ensures data analysis to guide decisions.</li>
         <li>GitHub Collaboration</li>
       </ul>
-      <a
-        href="https://github.com/Susmita75"
-        target="_blank"
-        rel="noreferrer"
-        style={{ color: "#1D9E75" }}
-      >
-        GitHub Profile
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Susmita75" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
       </a>
-    </div>
+      <a href="https://www.linkedin.com/in/susmita-mandal-0aa079278/" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
+      </div>
+
     {/* Priyanka */}
     <div
       style={{
@@ -876,20 +890,24 @@ export default function LandingPage({ onNavigate }) {
       }}
     >
       <h3 style={{ color: "#fff" }}>Priyanka Adak</h3>
-      <p style={{ color: "#378ADD" }}>UI/UX Designer & Frontend Developer</p>
-       <ul>
-        <li>User Interface Design</li>
-        <li>User Experience Planning</li>
-        <li>Frontend Components</li>
+      <p style={{ color: "#378ADD" }}>Frontend Developer</p>
+       <ul style={{ color: "#8ba8c8", fontSize: "13px" }}>
+        <li>Operates and manages the system's frontend, </li>
+        <li>Creates data analysis leads to interpret findings,</li>
+        <li>Generates schematic reports.</li>
       </ul>
-      <a
-        href="https://github.com/Priyanka-Adak"
-        target="_blank"
-        rel="noreferrer"
-        style={{ color: "#1D9E75" }}
-      >
-        GitHub Profile
+      <div style={{ display: "flex", justifyContent: "center", gap: "15px", marginTop: "10px" }}>
+      <a href="https://github.com/Priyanka-Adak" target="_blank" rel="noreferrer">
+        <FaGithub style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "white";}}
+         onMouseOut={(e) => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.color = "white";}}/>
       </a>
+      <a href="https://www.linkedin.com/in/priyanka-adak-73abb2277" target="_blank" rel="noreferrer">
+        <FaLinkedin style={{fontSize: "24px",transition: "0.3s",}}
+         onMouseOver={(e) => {e.currentTarget.style.transform = "scale(1.3)";e.currentTarget.style.color = "#0A66C2";}}
+         onMouseOut={(e) => { e.currentTarget.style.transform = "scale(1)";e.currentTarget.style.color = "#0A66C2";}}/>
+      </a>
+      </div>
     </div>
   </div>
 </div>
