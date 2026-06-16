@@ -3,5 +3,4 @@ uvicorn
 supabase
 pandas
 python-dotenv
-anthropic
 google-generativeai
