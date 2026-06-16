@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import LandingPage from "./LandingPage"
 import HospitalPage from "./HospitalPage"
+import AIAssistant from "./AIAssistant"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -659,6 +660,11 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
     onBack={() => setPage("dashboard")}
   />
 )}
+<AIAssistant 
+  selectedDistrict={selectedDistrict}
+  districtName={districts.find(d => d.id === selectedDistrict)?.name || ""}
+  districts={districts}
+/>
     </div>
   )
 }
