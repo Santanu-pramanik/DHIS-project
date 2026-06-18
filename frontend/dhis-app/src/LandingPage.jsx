@@ -7,8 +7,8 @@ import {
   ArrowRight,
   MapPin,
   AlertTriangle,
+  Stethoscope,
 } from "lucide-react";
-
 const WB_PATH =
   "M502,99 L499,115 L524,149 L517,195 L533,194 L527,202 L540,220 L502,248 L500,258 L492,258 L481,282 L513,315 L516,338 L498,333 L479,351 L491,371 L487,379 L479,378 L494,407 L498,431 L488,442 L499,448 L500,464 L482,467 L487,493 L467,515 L476,522 L459,524 L460,533 L451,531 L451,542 L443,548 L419,541 L425,563 L405,566 L406,576 L376,564 L362,572 L366,582 L360,593 L319,601 L301,629 L284,622 L282,610 L268,608 L266,621 L246,624 L240,654 L253,669 L266,667 L292,690 L331,693 L320,697 L318,717 L326,727 L341,730 L350,746 L367,752 L362,764 L373,770 L380,786 L359,793 L358,804 L395,816 L399,841 L408,842 L417,828 L424,829 L431,850 L451,854 L458,874 L481,869 L515,847 L530,817 L528,830 L535,827 L547,804 L542,791 L550,803 L542,824 L551,848 L547,864 L556,878 L563,877 L571,860 L575,873 L582,869 L587,835 L593,842 L585,877 L599,874 L607,834 L599,821 L603,813 L604,824 L615,819 L614,873 L626,873 L625,862 L636,878 L634,849 L641,866 L654,870 L664,864 L650,830 L659,824 L654,803 L660,795 L640,737 L642,699 L629,681 L629,667 L644,649 L610,644 L618,610 L610,612 L588,591 L589,563 L609,554 L612,544 L604,527 L607,504 L555,490 L533,476 L515,453 L533,427 L534,414 L553,426 L555,415 L563,413 L570,377 L626,382 L637,362 L616,353 L610,331 L596,339 L581,335 L542,294 L524,297 L519,280 L531,266 L530,248 L549,239 L562,218 L571,218 L565,203 L547,200 L555,181 L560,194 L591,212 L588,231 L606,224 L613,234 L616,226 L638,232 L640,225 L621,213 L627,203 L642,212 L654,248 L676,263 L685,259 L703,269 L714,254 L707,241 L714,241 L713,233 L721,237 L722,223 L737,208 L738,165 L723,159 L709,163 L710,154 L688,152 L676,143 L645,152 L633,136 L622,136 L618,127 L612,131 L611,111 L588,102 L569,102 L554,116 L537,110 L521,114 Z";
 
@@ -251,10 +251,10 @@ export default function LandingPage({ onNavigate }) {
               transition: "all .2s",
             }}
             onMouseEnter={(e) =>
-              (e.target.style.background = "rgba(55,138,221,0.2)")
+              (e.currentTarget.style.background = "rgba(55,138,221,0.2)")
             }
             onMouseLeave={(e) =>
-              (e.target.style.background = "rgba(55,138,221,0.08)")
+              (e.currentTarget.style.background = "rgba(55,138,221,0.08)")
             }
           >
             <LayoutDashboard size={14} /> Dashboard
@@ -277,6 +277,30 @@ export default function LandingPage({ onNavigate }) {
           >
             <ShieldCheck size={14} /> Admin Panel
           </button>
+<button
+  onClick={() => onNavigate("doctor")}
+  style={{
+    padding: "9px 22px",
+    borderRadius: 10,
+    border: "1px solid rgba(29,158,117,0.4)",
+    background: "rgba(29,158,117,0.08)",
+    color: "#6ee7b7",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  }}
+  onMouseEnter={(e) =>
+    (e.target.style.background = "rgba(29,158,117,0.2)")
+  }
+  onMouseLeave={(e) =>
+    (e.target.style.background = "rgba(29,158,117,0.08)")
+  }
+>
+    <Stethoscope size={14} /> Doctor Login
+</button>
         </div>
       </nav>
 
@@ -386,6 +410,7 @@ export default function LandingPage({ onNavigate }) {
             >
               Admin Login
             </button>
+            
           </div>
 
           {/* Stats */}

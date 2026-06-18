@@ -125,17 +125,16 @@ def get_hospital_details(hospital_id: int):
 async def symptom_check(data: dict):
     symptoms = data.get("symptoms", "")
     district = data.get("district", "Kolkata")
-    
-    # Get district data
+
     cases = supabase.table("disease_cases").select("*").execute().data
     hospitals = supabase.table("hospitals").select("*").execute().data
-    
+
     df = pd.DataFrame(cases)
     top_diseases = df.groupby("disease_type")["case_count"].sum().sort_values(ascending=False).head(5).to_dict() if not df.empty else {}
     hospital_list = [h["hospital_name"] for h in hospitals]
-    
+
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    
+
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=500,
@@ -154,22 +153,20 @@ Format:
 - ⚠️ Please consult a doctor immediately.""",
         messages=[{"role": "user", "content": f"Patient symptoms: {symptoms}"}]
     )
-    
-    return {"response": message.content[0].text}
 
+    return {"response": message.content[0].text}
 
 @app.post("/ai/chat")
 async def ai_chat(data: dict):
     question = data.get("question", "")
     district_id = data.get("district_id", 1)
     district_name = data.get("district_name", "Kolkata")
-    
-    # Get real data
+
     cases = supabase.table("disease_cases").select("*").eq("district_id", district_id).execute().data
     hospitals = supabase.table("hospitals").select("*").eq("district_id", district_id).execute().data
-    
+
     df = pd.DataFrame(cases)
-    
+
     if not df.empty:
         total_cases = int(df["case_count"].sum())
         top_disease = df.loc[df["case_count"].idxmax(), "disease_type"]
@@ -178,13 +175,13 @@ async def ai_chat(data: dict):
         total_cases = 0
         top_disease = "N/A"
         disease_breakdown = {}
-    
+
     total_doctors = sum(h["total_doctors"] for h in hospitals)
     available_doctors = sum(h["available_doctors"] for h in hospitals)
     hospital_names = [h["hospital_name"] for h in hospitals]
-    
+
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    
+
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=400,
@@ -202,5 +199,65 @@ Answer health questions based on this real data. Be concise and helpful.
 Always suggest consulting real doctors for medical advice.""",
         messages=[{"role": "user", "content": question}]
     )
-    
+
     return {"response": message.content[0].text}
+
+# ── Doctor Routes ──────────────────────────────────────────
+
+@app.post("/doctor/login")
+def doctor_login(data: dict):
+    unique_id = data.get("unique_id")
+    password = data.get("password")
+    res = supabase.table("doctors")\
+        .select("*")\
+        .eq("unique_id", unique_id)\
+        .eq("password", password)\
+        .execute()
+    if not res.data:
+        return {"success": False, "message": "Invalid ID or password"}
+    return {"success": True, "doctor": res.data[0]}
+
+@app.post("/doctor/attendance")
+def mark_attendance(data: dict):
+    from datetime import datetime, timezone
+    doctor_id = data.get("doctor_id")
+    hospital_id = data.get("hospital_id")
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    existing = supabase.table("attendance")\
+        .select("*")\
+        .eq("doctor_id", doctor_id)\
+        .eq("date", today)\
+        .execute()
+    if existing.data:
+        return {"success": False, "message": "Attendance already marked today", "attendance": existing.data[0]}
+    now = datetime.now(timezone.utc).isoformat()
+    res = supabase.table("attendance").insert({
+        "doctor_id": doctor_id,
+        "hospital_id": hospital_id,
+        "date": today,
+        "status": "present",
+        "marked_at": now
+    }).execute()
+    return {"success": True, "attendance": res.data[0]}
+
+@app.get("/doctor/attendance/today/{doctor_id}")
+def get_today_attendance(doctor_id: int):
+    from datetime import datetime, timezone
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    res = supabase.table("attendance")\
+        .select("*")\
+        .eq("doctor_id", doctor_id)\
+        .eq("date", today)\
+        .execute()
+    return res.data[0] if res.data else None
+
+@app.get("/doctor/attendance/{hospital_id}")
+def get_hospital_attendance(hospital_id: int):
+    from datetime import datetime, timezone
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    res = supabase.table("attendance")\
+        .select("*")\
+        .eq("hospital_id", hospital_id)\
+        .eq("date", today)\
+        .execute()
+    return res.data

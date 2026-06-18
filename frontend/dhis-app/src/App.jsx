@@ -3,6 +3,8 @@ import axios from "axios"
 import LandingPage from "./LandingPage"
 import HospitalPage from "./HospitalPage"
 import AIAssistant from "./AIAssistant"
+import DoctorLogin from "./DoctorLogin"
+import DoctorDashboard from "./DoctorDashboard"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -40,6 +42,8 @@ export default function App() {
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(false)
   const [adminLoggedIn, setAdminLoggedIn] = useState(false)
+  const [doctorLoggedIn, setDoctorLoggedIn] = useState(false)
+  const [loggedDoctor, setLoggedDoctor] = useState(null)
   const [pwInput, setPwInput] = useState("")
   const [pwError, setPwError] = useState("")
   const [existingDiseases, setExistingDiseases] = useState([])
@@ -642,10 +646,41 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
     </div>
   )
 
-  if (currentPage === "landing") {
-    return <LandingPage onNavigate={(p) => { setCurrentPage("app"); setPage(p) }} />
-  }
+if (currentPage === "landing") {
+  return <LandingPage onNavigate={(p) => {
+    if (p === "doctor") {
+      setCurrentPage("doctor")
+    } else {
+      setCurrentPage("app"); setPage(p)
+    }
+  }} />
+}
 
+if (currentPage === "landing") {
+  return <LandingPage onNavigate={(p) => {
+    if (p === "doctor") {
+      setCurrentPage("doctor")
+    } else {
+      setCurrentPage("app"); setPage(p)
+    }
+  }} />
+}
+
+if (currentPage === "doctor") {
+  if (!doctorLoggedIn) {
+    return <DoctorLogin
+      onLoginSuccess={(doctor) => {
+        setLoggedDoctor(doctor)
+        setDoctorLoggedIn(true)
+      }}
+      onBack={() => setCurrentPage("landing")}
+    />
+  }
+  return <DoctorDashboard
+    doctor={loggedDoctor}
+    onLogout={() => { setDoctorLoggedIn(false); setLoggedDoctor(null); setCurrentPage("landing") }}
+  />
+}
   return (
     <div style={{ fontFamily:"system-ui,sans-serif", minHeight:"100vh", background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)" }}>
       {navbar}
