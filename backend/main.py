@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
 import pandas as pd
 import os
+from datetime import date, datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -121,11 +122,82 @@ def get_hospital_details(hospital_id: int):
     departments = supabase.table("departments").select("*").eq("hospital_id", hospital_id).execute().data
     doctors = supabase.table("doctors").select("*").eq("hospital_id", hospital_id).execute().data
 
+    today = date.today().isoformat()
+    attendance = supabase.table("attendance").select("*").eq("hospital_id", hospital_id).eq("date", today).execute().data
+    attendance_map = {a["doctor_id"]: a for a in attendance}
+
+    for d in doctors:
+        a = attendance_map.get(d["id"])
+        d["attendance_status"] = a["status"] if a else "pending"
+        d["attendance_marked_at"] = a["marked_at"] if a else None
+
     return {
         "hospital": hospital[0] if hospital else {},
         "departments": departments,
         "doctors": doctors
     }
+
+
+@app.post("/doctor/login")
+def doctor_login(data: dict):
+    unique_id = (data.get("unique_id") or "").strip()
+    password = data.get("password") or ""
+
+    result = supabase.table("doctors").select("*").eq("unique_id", unique_id).execute().data
+    if not result or result[0].get("password") != password:
+        raise HTTPException(status_code=401, detail="Invalid ID or password.")
+
+    doctor = result[0]
+    hospital = supabase.table("hospitals").select("hospital_name").eq("id", doctor["hospital_id"]).execute().data
+    hospital_name = hospital[0]["hospital_name"] if hospital else ""
+
+    return {
+        "id": doctor["id"],
+        "name": doctor["name"],
+        "specialization": doctor["specialization"],
+        "hospital_id": doctor["hospital_id"],
+        "hospital_name": hospital_name,
+        "unique_id": doctor["unique_id"]
+    }
+
+
+@app.get("/doctor/{doctor_id}/attendance/today")
+def get_today_attendance(doctor_id: int):
+    today = date.today().isoformat()
+    res = supabase.table("attendance").select("*").eq("doctor_id", doctor_id).eq("date", today).execute().data
+    if res:
+        return {"status": res[0]["status"], "marked_at": res[0]["marked_at"]}
+    return {"status": "pending", "marked_at": None}
+
+
+@app.post("/doctor/{doctor_id}/attendance/mark")
+def mark_attendance(doctor_id: int, data: dict):
+    status_value = data.get("status")
+    if status_value not in ("present", "absent"):
+        raise HTTPException(status_code=400, detail="Status must be 'present' or 'absent'.")
+
+    doctor = supabase.table("doctors").select("hospital_id").eq("id", doctor_id).execute().data
+    if not doctor:
+        raise HTTPException(status_code=404, detail="Doctor not found.")
+
+    today = date.today().isoformat()
+    now = datetime.now().isoformat()
+
+    existing = supabase.table("attendance").select("*").eq("doctor_id", doctor_id).eq("date", today).execute().data
+    if existing:
+        supabase.table("attendance").update(
+            {"status": status_value, "marked_at": now}
+        ).eq("id", existing[0]["id"]).execute()
+    else:
+        supabase.table("attendance").insert({
+            "doctor_id": doctor_id,
+            "hospital_id": doctor[0]["hospital_id"],
+            "date": today,
+            "status": status_value,
+            "marked_at": now
+        }).execute()
+
+    return {"status": status_value, "marked_at": now}
 
 @app.post("/ai/symptom-check")
 async def symptom_check(data: dict):

@@ -3,6 +3,8 @@ import axios from "axios"
 import LandingPage from "./LandingPage"
 import HospitalPage from "./HospitalPage"
 import AIAssistant from "./AIAssistant"
+import DoctorLogin from "./DoctorLogin"
+import DoctorDashboard from "./DoctorDashboard"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -17,6 +19,7 @@ const API = "https://dhis-backend.onrender.com"
 const COLORS = ["#378ADD","#1D9E75","#EF9F27","#D85A30","#7F77DD","#993556","#639922","#BA7517","#D4537E","#0F6E56","#E24B4A","#533AB7"]
 const MAX_YEAR = 2026
 const SESSION_KEY = "dhis_admin_session"
+const DOCTOR_SESSION_KEY = "dhis_doctor_session"
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "dhis2025"
 
 const WB_PATH = "M290,58 L295,62 L300,68 L298,75 L302,80 L305,87 L302,93 L298,98 L300,105 L297,112 L293,118 L290,125 L292,132 L289,139 L285,145 L282,152 L278,158 L274,164 L270,170 L266,176 L261,181 L256,186 L250,190 L244,194 L238,198 L232,202 L226,205 L220,207 L214,208 L208,207 L202,205 L197,201 L192,197 L188,192 L184,186 L181,180 L179,174 L177,168 L176,162 L175,156 L175,150 L176,144 L177,138 L179,132 L181,126 L184,121 L187,115 L191,110 L195,105 L200,101 L205,97 L210,93 L215,89 L220,85 L225,81 L230,77 L235,73 L240,69 L245,65 L250,61 L255,58 L260,55 L265,53 L270,52 L275,52 L280,54 L285,56 Z"
@@ -50,10 +53,15 @@ export default function App() {
   const [editForm, setEditForm] = useState({})
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [allCases, setAllCases] = useState([])
+  const [doctorSession, setDoctorSession] = useState(null)
 
   useEffect(() => {
     const session = sessionStorage.getItem(SESSION_KEY)
     if (session === "true") setAdminLoggedIn(true)
+    const docSession = sessionStorage.getItem(DOCTOR_SESSION_KEY)
+    if (docSession) {
+      try { setDoctorSession(JSON.parse(docSession)) } catch { /* ignore corrupt session */ }
+    }
   }, [])
 
   useEffect(() => {
@@ -92,6 +100,18 @@ export default function App() {
     setAdminLoggedIn(false)
     sessionStorage.removeItem(SESSION_KEY)
     setPwInput("")
+  }
+
+  const handleDoctorLoginSuccess = (doctorData) => {
+    setDoctorSession(doctorData)
+    sessionStorage.setItem(DOCTOR_SESSION_KEY, JSON.stringify(doctorData))
+    setPage("doctorDashboard")
+  }
+
+  const handleDoctorLogout = () => {
+    setDoctorSession(null)
+    sessionStorage.removeItem(DOCTOR_SESSION_KEY)
+    setPage("dashboard")
   }
 
   const showMsg = (text, type="success") => {
@@ -189,6 +209,13 @@ export default function App() {
             color: currentPage==="app" && page==="admin" ? "#fff" : "#aac4e0",
             display:"flex", alignItems:"center", gap:6 }}>
           <ShieldCheck size={15} /> Admin Panel
+        </button>
+        <button onClick={() => { setCurrentPage("app"); setPage(doctorSession ? "doctorDashboard" : "doctorLogin") }}
+          style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
+            background: currentPage==="app" && (page==="doctorLogin" || page==="doctorDashboard") ? "#1D9E75" : "transparent",
+            color: currentPage==="app" && (page==="doctorLogin" || page==="doctorDashboard") ? "#fff" : "#aac4e0",
+            display:"flex", alignItems:"center", gap:6 }}>
+          <Stethoscope size={15} /> {doctorSession ? "Doctor Panel" : "Doctor Login"}
         </button>
         <button onClick={() => { setCurrentPage("app"); setPage("about") }}
           style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
@@ -653,6 +680,8 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
       {page === "admin" && !adminLoggedIn && loginPage}
       {page === "admin" && adminLoggedIn && adminPage}
       {page === "about" && aboutPage}
+      {page === "doctorLogin" && !doctorSession && <DoctorLogin onLoginSuccess={handleDoctorLoginSuccess} />}
+      {page === "doctorDashboard" && doctorSession && <DoctorDashboard doctor={doctorSession} onLogout={handleDoctorLogout} />}
       {page === "hospitals" && (
   <HospitalPage
     districtId={selectedDistrict}

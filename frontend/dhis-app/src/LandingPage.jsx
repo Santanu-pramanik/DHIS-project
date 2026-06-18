@@ -3,6 +3,7 @@ import {
   Activity,
   LayoutDashboard,
   ShieldCheck,
+  Stethoscope,
   ArrowRight,
   MapPin,
   AlertTriangle,
@@ -274,6 +275,24 @@ export default function LandingPage({ onNavigate }) {
           >
             <ShieldCheck size={14} /> Admin Panel
           </button>
+          <button
+            onClick={() => onNavigate("doctorLogin")}
+            style={{
+              padding: "9px 22px",
+              borderRadius: 10,
+              border: "none",
+              background: "linear-gradient(135deg, #1D9E75, #15803d)",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <Stethoscope size={14} /> Doctor Login
+          </button>
         </div>
       </nav>
 
@@ -382,6 +401,24 @@ export default function LandingPage({ onNavigate }) {
               }}
             >
               Admin Login
+            </button>
+            <button
+              onClick={() => onNavigate("doctorLogin")}
+              style={{
+                padding: "14px 32px",
+                borderRadius: 12,
+                border: "1px solid rgba(29,158,117,0.4)",
+                background: "transparent",
+                color: "#6ee7b7",
+                cursor: "pointer",
+                fontSize: 15,
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Stethoscope size={16} /> Doctor Login
             </button>
           </div>
 
