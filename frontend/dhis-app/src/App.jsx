@@ -12,7 +12,7 @@ import {
 import {
   LayoutDashboard, ShieldCheck, LogOut, Plus, Trash2, Pencil,
   AlertCircle, CheckCircle2, Building2, Stethoscope, Activity,
-Home, X, Save, Users, Globe, ExternalLink} 
+Home, X, Save} 
 from "lucide-react"
 
 const API = "https://dhis-backend.onrender.com"
@@ -193,13 +193,6 @@ export default function App() {
             color: currentPage==="app" && page==="admin" ? "#fff" : "#aac4e0",
             display:"flex", alignItems:"center", gap:6 }}>
           <ShieldCheck size={15} /> Admin Panel
-        </button>
-        <button onClick={() => { setCurrentPage("app"); setPage("about") }}
-          style={{ padding:"7px 22px", borderRadius:8, border:"none", cursor:"pointer", fontWeight:600, fontSize:13,
-            background: currentPage==="app" && page==="about" ? "#378ADD" : "transparent",
-            color: currentPage==="app" && page==="about" ? "#fff" : "#aac4e0",
-            display:"flex", alignItems:"center", gap:6 }}>
-          <Users size={15} /> About
         </button>
       </div>
     </div>
@@ -531,121 +524,6 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
     </div>
   )
 
-
-  const teamMembers = [
-    {
-      name: "Rahit Kumar Saha",
-      role: "Data Engineer",
-      desc: "Managing all data-centric operations including sourcing, cleaning, and analyzing health datasets to achieve project objectives.",
-      github: "https://github.com",
-      linkedin: "https://linkedin.com",
-      initial: "R"
-    },
-    {
-      name: "Santanu Pramanik",
-      role: "Full Stack Developer",
-      desc: "Manages the complete project and leads the backend development and architecture tasks.",
-      github: "https://github.com/Santanu-pramanik",
-      linkedin: "https://linkedin.com/in/santanu-pramanik",
-      initial: "S"
-    },
-    {
-      name: "Priyanka Ade",
-      role: "Frontend Developer",
-      desc: "Operates and manages the system's frontend, creates data analysis leads to interpret findings, and generates schematic reports.",
-      github: "https://github.com",
-      linkedin: "https://linkedin.com",
-      initial: "P"
-    },
-    {
-      name: "Sumita Mandal",
-      role: "Project Manager",
-      desc: "Manages all aspects of the project's web page and ensures data analysis to guide decisions.",
-      github: "https://github.com",
-      linkedin: "https://linkedin.com",
-      initial: "M"
-    }
-  ]
-
-  const aboutPage = (
-    <div style={{ padding:"28px 32px", maxWidth:"100%", background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)", minHeight:"100vh", position:"relative" }}>
-      <div style={{ position:"fixed", right:"2%", top:"50%", transform:"translateY(-50%)", opacity:0.06, pointerEvents:"none", zIndex:0 }}>
-        <svg width="500" height="600" viewBox="165 45 155 195">
-          <path d={WB_PATH} fill="#1a5276" stroke="#1a5276" strokeWidth="1"/>
-          <text x="225" y="235" textAnchor="middle" fill="#1a5276" fontSize="12" fontWeight="700" letterSpacing="3">WEST BENGAL</text>
-        </svg>
-      </div>
-      <div style={{ position:"relative", zIndex:1 }}>
-        {/* Project info */}
-        <div style={{ background:"rgba(255,255,255,0.95)", borderRadius:16, padding:"32px 36px", boxShadow:"0 2px 12px rgba(0,0,0,0.07)", marginBottom:24 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-            <div style={{ width:52, height:52, borderRadius:14, background:"linear-gradient(135deg, #378ADD, #1D9E75)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Activity size={26} color="#fff" />
-            </div>
-            <div>
-              <div style={{ fontSize:22, fontWeight:800, color:"#1a2236" }}>District Health Intelligence System</div>
-              <div style={{ fontSize:13, color:"#888", marginTop:2 }}>DHIS — Final Year Project | Abacus Institute of Engineering and Management</div>
-            </div>
-          </div>
-          <p style={{ fontSize:14, color:"#555", lineHeight:1.8, maxWidth:700 }}>
-            The District Health Intelligence System (DHIS) is a digital platform that collects and analyzes
-            district-level health data to support informed decision-making and improve public health services
-            across West Bengal. The system tracks disease outbreaks, hospital capacity, and doctor requirements
-            in real-time.
-          </p>
-          <div style={{ display:"flex", gap:16, marginTop:20, flexWrap:"wrap" }}>
-            {[
-              { label:"Technology", value:"React + FastAPI + Supabase" },
-              { label:"Region", value:"West Bengal, India" },
-              { label:"Districts", value:"4 Active Districts" },
-              { label:"Year", value:"2025-26" }
-            ].map(item => (
-              <div key={item.label} style={{ background:"#f8fafc", borderRadius:10, padding:"10px 16px", border:"1px solid #e5e7eb" }}>
-                <div style={{ fontSize:11, color:"#888", marginBottom:3 }}>{item.label}</div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#1a2236" }}>{item.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Team members */}
-        <div style={{ fontSize:18, fontWeight:700, color:"#1a2236", marginBottom:16, display:"flex", alignItems:"center", gap:8 }}>
-          <Users size={20} color="#378ADD" /> Our Team
-        </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
-          {teamMembers.map((member, i) => (
-            <div key={i} style={{ background:"rgba(255,255,255,0.95)", borderRadius:16, padding:"24px 28px", boxShadow:"0 2px 12px rgba(0,0,0,0.07)", display:"flex", gap:18, alignItems:"flex-start" }}>
-              <div style={{ width:52, height:52, borderRadius:14, background:`linear-gradient(135deg, ${COLORS[i]}, ${COLORS[(i+3)%COLORS.length]})`,
-                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20, fontWeight:700, color:"#fff" }}>
-                {member.initial}
-              </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:16, fontWeight:700, color:"#1a2236", marginBottom:2 }}>{member.name}</div>
-                <div style={{ fontSize:12, color:"#378ADD", fontWeight:600, marginBottom:8 }}>{member.role}</div>
-                <p style={{ fontSize:13, color:"#666", lineHeight:1.7, marginBottom:12 }}>{member.desc}</p>
-                <div style={{ display:"flex", gap:8 }}>
-                  <a href={member.github} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:6, background:"#f1f5f9", color:"#333", textDecoration:"none", fontSize:12, fontWeight:600 }}>
-                    <ExternalLink size={13} /> GitHub
-                  </a>
-                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer"
-                    style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius:6, background:"#EBF5FF", color:"#1565C0", textDecoration:"none", fontSize:12, fontWeight:600 }}>
-                    <ExternalLink size={13} /> LinkedIn
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <div style={{ textAlign:"center", marginTop:32, padding:"20px", color:"#aaa", fontSize:13 }}>
-          Built with React, FastAPI & Supabase | Abacus Institute of Engineering and Management, Kolkata
-        </div>
-      </div>
-    </div>
-  )
-
 if (currentPage === "landing") {
   return <LandingPage onNavigate={(p) => {
     if (p === "doctor") {
@@ -687,7 +565,7 @@ if (currentPage === "doctor") {
       {page === "dashboard" && dashboardPage}
       {page === "admin" && !adminLoggedIn && loginPage}
       {page === "admin" && adminLoggedIn && adminPage}
-      {page === "about" && aboutPage}
+      {/* {page === "about" && aboutPage} */}
       {page === "hospitals" && (
   <HospitalPage
     districtId={selectedDistrict}
