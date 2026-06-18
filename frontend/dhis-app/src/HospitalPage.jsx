@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import {
-  Building2, Phone, MapPin, Stethoscope, Users, BedDouble,
-  ChevronLeft, CheckCircle2, XCircle, Ambulance, ArrowRight
+  Building2, Phone, MapPin, Stethoscope, BedDouble,
+  ChevronLeft, CheckCircle2, XCircle, ArrowRight, Clock
 } from "lucide-react"
 
 const API = "https://dhis-backend.onrender.com"
@@ -14,6 +14,7 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
   const [details, setDetails] = useState(null)
   const [loading, setLoading] = useState(false)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [attendanceMap, setAttendanceMap] = useState({})
 
   useEffect(() => {
     setLoading(true)
@@ -26,9 +27,23 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
     setSelectedHospital(hospital)
     setDetailLoading(true)
     setDetails(null)
+    setAttendanceMap({})
+
     axios.get(`${API}/hospital/${hospital.id}/details`)
       .then(r => { setDetails(r.data); setDetailLoading(false) })
       .catch(() => setDetailLoading(false))
+
+    axios.get(`${API}/doctor/attendance/${hospital.id}`)
+      .then(r => {
+        const map = {}
+        r.data.forEach(a => {
+          map[a.doctor_id] = new Date(a.marked_at).toLocaleTimeString("en-IN", {
+            hour: "2-digit", minute: "2-digit", hour12: true
+          })
+        })
+        setAttendanceMap(map)
+      })
+      .catch(() => {})
   }
 
   const WB_PATH = "M290,58 L295,62 L300,68 L298,75 L302,80 L305,87 L302,93 L298,98 L300,105 L297,112 L293,118 L290,125 L292,132 L289,139 L285,145 L282,152 L278,158 L274,164 L270,170 L266,176 L261,181 L256,186 L250,190 L244,194 L238,198 L232,202 L226,205 L220,207 L214,208 L208,207 L202,205 L197,201 L192,197 L188,192 L184,186 L181,180 L179,174 L177,168 L176,162 L175,156 L175,150 L176,144 L177,138 L179,132 L181,126 L184,121 L187,115 L191,110 L195,105 L200,101 L205,97 L210,93 L215,89 L220,85 L225,81 L230,77 L235,73 L240,69 L245,65 L250,61 L255,58 L260,55 L265,53 L270,52 L275,52 L280,54 L285,56 Z"
@@ -59,6 +74,7 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
 
         {loading && <div style={{ textAlign:"center", padding:60, color:"#888" }}>Loading hospitals...</div>}
 
+        {/* Hospital List */}
         {!loading && !selectedHospital && (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(320px, 1fr))", gap:16 }}>
             {hospitals.map((h, i) => (
@@ -118,7 +134,7 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
         {/* Hospital Detail View */}
         {selectedHospital && (
           <div>
-            <button onClick={() => { setSelectedHospital(null); setDetails(null) }}
+            <button onClick={() => { setSelectedHospital(null); setDetails(null); setAttendanceMap({}) }}
               style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", borderRadius:8, marginBottom:20,
                 background:"rgba(255,255,255,0.9)", border:"1px solid #ddd", cursor:"pointer", fontSize:13, fontWeight:600, color:"#555" }}>
               <ChevronLeft size={16} /> Back to Hospitals
@@ -173,12 +189,15 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
 
             {details && !detailLoading && (
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18 }}>
+
                 {/* Departments */}
                 <div style={{ background:"rgba(255,255,255,0.95)", borderRadius:16, padding:"24px 28px", boxShadow:"0 2px 12px rgba(0,0,0,0.07)" }}>
                   <div style={{ fontSize:16, fontWeight:700, color:"#1a2236", marginBottom:16, display:"flex", alignItems:"center", gap:8 }}>
                     <BedDouble size={18} color="#378ADD" /> Departments ({details.departments.length})
                   </div>
-                  {details.departments.length === 0 && <div style={{ color:"#aaa", fontSize:13 }}>No departments added yet.</div>}
+                  {details.departments.length === 0 && (
+                    <div style={{ color:"#aaa", fontSize:13 }}>No departments added yet.</div>
+                  )}
                   {details.departments.map((dept, i) => (
                     <div key={dept.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
                       padding:"12px 14px", borderRadius:10, marginBottom:8,
@@ -204,27 +223,48 @@ export default function HospitalPage({ districtId, districtName, onBack }) {
                   <div style={{ fontSize:16, fontWeight:700, color:"#1a2236", marginBottom:16, display:"flex", alignItems:"center", gap:8 }}>
                     <Stethoscope size={18} color="#1D9E75" /> Doctors ({details.doctors.length})
                   </div>
-                  {details.doctors.length === 0 && <div style={{ color:"#aaa", fontSize:13 }}>No doctors added yet.</div>}
-                  {details.doctors.map((doc) => (
-                    <div key={doc.id} style={{ display:"flex", alignItems:"center", gap:12,
-                      padding:"12px 14px", borderRadius:10, marginBottom:8, border:"1px solid #e5e7eb",
-                      background: doc.available ? "#f0fdf4" : "#fef2f2" }}>
-                      <div style={{ width:38, height:38, borderRadius:10, background: doc.available ? "#1D9E75" : "#e24b4a",
-                        display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#fff", fontSize:14, fontWeight:700 }}>
-                        {doc.name.charAt(4)}
+                  {details.doctors.length === 0 && (
+                    <div style={{ color:"#aaa", fontSize:13 }}>No doctors added yet.</div>
+                  )}
+                  {details.doctors.map((doc) => {
+                    const attendanceTime = attendanceMap[doc.id] || null
+                    return (
+                      <div key={doc.id} style={{ display:"flex", alignItems:"center", gap:12,
+                        padding:"12px 14px", borderRadius:10, marginBottom:8, border:"1px solid #e5e7eb",
+                        background: doc.available ? "#f0fdf4" : "#fef2f2" }}>
+
+                        {/* Avatar */}
+                        <div style={{ width:38, height:38, borderRadius:10,
+                          background: doc.available ? "#1D9E75" : "#e24b4a",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          flexShrink:0, color:"#fff", fontSize:14, fontWeight:700 }}>
+                          {doc.name.charAt(3)}
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ flex:1 }}>
+                          <div style={{ fontSize:14, fontWeight:600, color:"#1a2236" }}>{doc.name}</div>
+                          <div style={{ fontSize:12, color:"#888" }}>{doc.specialization}</div>
+                          {/* Attendance badge */}
+                          {attendanceTime && (
+                            <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:4,
+                              fontSize:11, color:"#378ADD", fontWeight:600 }}>
+                              <Clock size={11} /> Present since {attendanceTime}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Available status */}
+                        <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600,
+                          color: doc.available ? "#1D9E75" : "#e24b4a", flexShrink:0 }}>
+                          {doc.available ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                          {doc.available ? "Available" : "Unavailable"}
+                        </div>
                       </div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:14, fontWeight:600, color:"#1a2236" }}>{doc.name}</div>
-                        <div style={{ fontSize:12, color:"#888" }}>{doc.specialization}</div>
-                      </div>
-                      <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, fontWeight:600,
-                        color: doc.available ? "#1D9E75" : "#e24b4a" }}>
-                        {doc.available ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                        {doc.available ? "Available" : "Unavailable"}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
+
               </div>
             )}
           </div>
