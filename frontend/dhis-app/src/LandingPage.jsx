@@ -375,6 +375,8 @@ export default function LandingPage({ onNavigate }) {
                 padding: "24px",
                 animationDelay: `${idx * 0.1}s`,
                 boxShadow: `0 8px 32px rgba(0,0,0,0.4), 0 0 0 0px ${member.border}, inset 0 1px 0 rgba(255,255,255,0.04)`,
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               {/* Top accent line */}
@@ -414,7 +416,7 @@ export default function LandingPage({ onNavigate }) {
               </div>
 
               {/* Social links */}
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
                 <a href={member.github} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#cdd8e8", textDecoration: "none", fontSize: 12, fontWeight: 600, transition: "all 0.2s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#fff"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#cdd8e8"; }}>
