@@ -264,124 +264,40 @@ def get_hospital_attendance(hospital_id: int):
     return res.data
 
 # ============================================================
-# PATIENT ROUTES
+# PATIENT ROUTES — Register + Login (No OTP)
 # ============================================================
 
-import random
-import httpx
-from datetime import datetime, timedelta, timezone
+import hashlib
 
-FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
-
-async def _send_otp_sms(mobile: str, otp: str) -> bool:
-    print(f"[DEV] OTP for {mobile}: {otp}")
-    return True
-
-def _save_otp(mobile: str, otp: str):
-    supabase.table("patient_otps").delete().eq("mobile", mobile).execute()
-    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
-    supabase.table("patient_otps").insert({
-        "mobile": mobile,
-        "otp": otp,
-        "expires_at": expires_at,
-    }).execute()
-
-def _verify_otp_db(mobile: str, otp: str) -> dict:
-    res = supabase.table("patient_otps")\
-        .select("*")\
-        .eq("mobile", mobile)\
-        .order("created_at", desc=True)\
-        .limit(1)\
-        .execute()
-
-    if not res.data:
-        return {"ok": False, "message": "OTP not found. Please request again."}
-
-    record = res.data[0]
-    expires_at = datetime.fromisoformat(record["expires_at"].replace("Z", "+00:00"))
-
-    if datetime.now(timezone.utc) > expires_at:
-        supabase.table("patient_otps").delete().eq("mobile", mobile).execute()
-        return {"ok": False, "message": "OTP expired. Please request a new one."}
-
-    if record["otp"] != otp:
-        return {"ok": False, "message": "Incorrect OTP. Please try again."}
-
-    supabase.table("patient_otps").delete().eq("mobile", mobile).execute()
-    return {"ok": True, "message": "OTP verified."}
-
-
-@app.post("/patient/send-otp")
-async def patient_send_otp(data: dict):
-    mobile = data.get("mobile", "").strip()
-    if not mobile.isdigit() or len(mobile) != 10:
-        return {"success": False, "message": "Enter a valid 10-digit mobile number."}
-
-    otp = str(random.randint(100000, 999999))
-    _save_otp(mobile, otp)
-
-    sent = await _send_otp_sms(mobile, otp)
-    if not sent:
-        return {"success": False, "message": "Failed to send OTP. Check Fast2SMS API key."}
-
-    existing = supabase.table("patients").select("uid, full_name").eq("mobile", mobile).execute()
-    is_registered = len(existing.data) > 0
-
-    return {
-        "success": True,
-        "is_registered": is_registered,
-        "message": f"OTP sent to +91{mobile}. Valid for 5 minutes."
-    }
-
-
-@app.post("/patient/login")
-def patient_login(data: dict):
-    mobile = data.get("mobile", "").strip()
-    otp    = data.get("otp", "").strip()
-
-    result = _verify_otp_db(mobile, otp)
-    if not result["ok"]:
-        return {"success": False, "message": result["message"]}
-
-    res = supabase.table("patients")\
-        .select("*, districts(name)")\
-        .eq("mobile", mobile)\
-        .execute()
-
-    if not res.data:
-        return {"success": False, "message": "Patient not found. Please register first."}
-
-    return {"success": True, "patient": res.data[0]}
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 @app.post("/patient/register")
 def patient_register(data: dict):
-    mobile = data.get("mobile", "").strip()
-    otp    = data.get("otp", "").strip()
+    required = ["full_name", "aadhar_last4", "age", "gender", "address", "mobile", "password"]
+    for field in required:
+        if not data.get(field):
+            return {"success": False, "message": f"'{field}' is required."}
 
-    result = _verify_otp_db(mobile, otp)
-    if not result["ok"]:
-        return {"success": False, "message": result["message"]}
+    mobile = str(data["mobile"]).strip()
+    aadhar_last4 = str(data["aadhar_last4"]).strip()
+    password = str(data["password"]).strip()
+
+    if not mobile.isdigit() or len(mobile) != 10:
+        return {"success": False, "message": "Enter a valid 10-digit mobile number."}
+    if not aadhar_last4.isdigit() or len(aadhar_last4) != 4:
+        return {"success": False, "message": "Enter last 4 digits of Aadhaar."}
+    if len(password) < 6:
+        return {"success": False, "message": "Password must be at least 6 characters."}
 
     existing = supabase.table("patients").select("uid").eq("mobile", mobile).execute()
     if existing.data:
         return {"success": False, "message": "This mobile number is already registered. Please login."}
 
-    required = ["full_name", "aadhar_last4", "age", "gender", "address"]
-    for field in required:
-        if not data.get(field):
-            return {"success": False, "message": f"'{field}' is required."}
-
-    aadhar_last4 = str(data["aadhar_last4"]).strip()
-    if not aadhar_last4.isdigit() or len(aadhar_last4) != 4:
-        return {"success": False, "message": "Enter last 4 digits of Aadhaar."}
-
     district_id = None
     if data.get("district_name"):
-        dist = supabase.table("districts")\
-            .select("id")\
-            .ilike("name", data["district_name"])\
-            .execute()
+        dist = supabase.table("districts").select("id").ilike("name", data["district_name"]).execute()
         if dist.data:
             district_id = dist.data[0]["id"]
 
@@ -395,14 +311,40 @@ def patient_register(data: dict):
             "mobile":       mobile,
             "address":      data["address"].strip(),
             "district_id":  district_id,
+            "password":     _hash_password(password),
             "allergies":    data.get("allergies") or None,
             "conditions":   data.get("conditions") or None,
         }).execute()
 
         patient = res.data[0]
+        patient.pop("password", None)
         return {"success": True, "patient": patient, "uid": patient["uid"]}
     except Exception as e:
         return {"success": False, "message": str(e)}
+
+
+@app.post("/patient/login")
+def patient_login(data: dict):
+    uid      = str(data.get("uid", "")).strip().upper()
+    password = str(data.get("password", "")).strip()
+
+    if not uid or not password:
+        return {"success": False, "message": "Patient ID and password are required."}
+
+    res = supabase.table("patients")\
+        .select("*, districts(name)")\
+        .eq("uid", uid)\
+        .execute()
+
+    if not res.data:
+        return {"success": False, "message": "Patient ID not found."}
+
+    patient = res.data[0]
+    if patient["password"] != _hash_password(password):
+        return {"success": False, "message": "Incorrect password."}
+
+    patient.pop("password", None)
+    return {"success": True, "patient": patient}
 
 
 @app.get("/patient/{uid}")
@@ -413,7 +355,9 @@ def get_patient(uid: str):
         .execute()
     if not res.data:
         return {"success": False, "message": "Patient not found."}
-    return {"success": True, "patient": res.data[0]}
+    patient = res.data[0]
+    patient.pop("password", None)
+    return {"success": True, "patient": patient}
 
 
 @app.get("/patient/{uid}/visits")
