@@ -553,23 +553,11 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #rgba(255,255,2
 
 if (currentPage === "landing") {
   return <LandingPage onNavigate={(p) => {
-    if (p === "doctor") {
-      setCurrentPage("doctor")
-    } else {
-      setCurrentPage("app"); setPage(p)
-    }
+    if (p === "patient") setShowPatientReg(true)
+    else if (p === "doctor") setCurrentPage("doctor")
+    else { setCurrentPage("app"); setPage(p) }
   }} />
 }
-
-if (currentPage === "landing") {
-  return <LandingPage onNavigate={(p) => {
-     if (p === "patient") setShowPatientReg(true)
-    else if (p === "doctor") setCurrentPage(doctor)
-    else {setCurrentPage("app"); setPage(p)
-    }
-  }} />
-}
-
 if (currentPage === "doctor") {
   if (!doctorLoggedIn) {
     return <DoctorLogin

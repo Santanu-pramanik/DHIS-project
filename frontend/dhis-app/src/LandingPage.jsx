@@ -234,16 +234,6 @@ export default function LandingPage({ onNavigate }) {
           <button onClick={() => onNavigate("admin")} style={{ padding: "9px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #378ADD, #2563eb)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
             <ShieldCheck size={14} /> Admin Panel
           </button>
-          <button onClick={() => onNavigate("patient")} style={{ 
-  padding: "9px 22px", borderRadius: 10, 
-  border: "1px solid rgba(29,158,117,0.4)", 
-  background: "rgba(29,158,117,0.08)", 
-  color: "#6ee7b7", cursor: "pointer", 
-  fontSize: 13, fontWeight: 600, 
-  display: "flex", alignItems: "center", gap: 6 
-}}>
-  🏥 Patient Register
-</button>
           <button onClick={() => onNavigate("doctor")} style={{ padding: "9px 22px", borderRadius: 10, border: "1px solid rgba(29,158,117,0.4)", background: "rgba(29,158,117,0.08)", color: "#6ee7b7", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.08)")}>
             <Stethoscope size={14} /> Doctor Login
           </button>
@@ -360,6 +350,85 @@ export default function LandingPage({ onNavigate }) {
           </div>
         </div>
       </div>
+
+      {/* ── PATIENT REGISTRATION CARD ── */}
+<div style={{
+  display: "flex",
+  justifyContent: "center",
+  padding: "0 48px 60px",
+  position: "relative",
+  zIndex: 5,
+}}>
+  <div style={{
+    background: "rgba(255,255,255,0.04)",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: 20,
+    padding: "36px 48px",
+    width: "100%",
+    maxWidth: 900,
+    position: "relative",
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 40,
+  }}>
+    {/* Top accent line */}
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #378ADD, #1D9E75)" }} />
+
+    {/* Left — icon + text */}
+    <div style={{ display: "flex", alignItems: "center", gap: 20, flex: 1 }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: 16,
+        background: "rgba(29,158,117,0.15)",
+        border: "1px solid rgba(29,158,117,0.3)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 26, flexShrink: 0,
+      }}>🏥</div>
+      <div>
+        <div style={{ color: "#fff", fontWeight: 700, fontSize: 20, marginBottom: 6 }}>
+          Patient Registration & Login
+        </div>
+        <div style={{ color: "#8ba8c8", fontSize: 13, lineHeight: 1.6, maxWidth: 420 }}>
+          Register as a new patient or log in using your mobile number and OTP. Access your health records across all 18 districts of West Bengal.
+        </div>
+      </div>
+    </div>
+
+    {/* Middle — stats */}
+    <div style={{ display: "flex", gap: 24, flexShrink: 0 }}>
+      {[["18", "Districts"], ["20K+", "Patients"], ["24/7", "Support"]].map(([v, l]) => (
+        <div key={l} style={{ textAlign: "center" }}>
+          <div style={{ color: "#378ADD", fontWeight: 800, fontSize: 22 }}>{v}</div>
+          <div style={{ color: "#5b8fc9", fontSize: 11, marginTop: 2 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Right — button */}
+    <div style={{ flexShrink: 0 }}>
+      <button
+        onClick={() => onNavigate("patient")}
+        style={{
+          padding: "14px 32px", borderRadius: 12, border: "none",
+          background: "linear-gradient(135deg, #378ADD, #1D9E75)",
+          color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
+          display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+      >
+        <ArrowRight size={16} /> Get Started
+      </button>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, justifyContent: "center" }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#1D9E75" }} />
+        <span style={{ color: "#6ee7b7", fontSize: 11, fontWeight: 600 }}>OTP Verified Access</span>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* ── TEAM SECTION ── */}
       <div style={{ padding: "72px 48px 80px", position: "relative", zIndex: 5 }}>
