@@ -5,6 +5,8 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 import anthropic
+import hashlib
+import httpx
 
 load_dotenv()
 
@@ -19,7 +21,37 @@ app.add_middleware(
 )
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
 
+# ── SMS Helper ───────────────────────────────────────────────
+async def send_sms(mobile: str, message: str) -> bool:
+    """Send SMS via Fast2SMS"""
+    if not FAST2SMS_KEY:
+        print("[SMS] FAST2SMS_API_KEY not set, skipping SMS")
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            res = await client.get(
+                "https://www.fast2sms.com/dev/bulkV2",
+                headers={"authorization": FAST2SMS_KEY},
+                params={
+                    "variables_values": message,
+                    "route": "q",          # quick transactional route
+                    "numbers": mobile,
+                }
+            )
+            data = res.json()
+            print(f"[Fast2SMS] {data}")
+            return data.get("return", False)
+    except Exception as e:
+        print(f"[Fast2SMS Error] {e}")
+        return False
+
+# ── Password helper ──────────────────────────────────────────
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# ── Root ─────────────────────────────────────────────────────
 @app.get("/")
 def root():
     return {"message": "DHIS API running"}
@@ -115,7 +147,6 @@ def get_hospital_details(hospital_id: int):
     hospital = supabase.table("hospitals").select("*").eq("id", hospital_id).execute().data
     departments = supabase.table("departments").select("*").eq("hospital_id", hospital_id).execute().data
     doctors = supabase.table("doctors").select("*").eq("hospital_id", hospital_id).execute().data
-
     return {
         "hospital": hospital[0] if hospital else {},
         "departments": departments,
@@ -135,7 +166,6 @@ async def symptom_check(data: dict):
     hospital_list = [h["hospital_name"] for h in hospitals]
 
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=500,
@@ -144,17 +174,16 @@ Current district: {district}
 Top diseases in this district: {top_diseases}
 Available hospitals: {', '.join(hospital_list)}
 
-Based on symptoms, suggest possible diseases and recommend hospitals. 
+Based on symptoms, suggest possible diseases and recommend hospitals.
 Keep response concise, helpful and in simple English.
 Always remind users to consult a real doctor.
-Format: 
+Format:
 - Possible conditions: ...
 - Recommended hospital: ...
 - Precautions: ...
 - ⚠️ Please consult a doctor immediately.""",
         messages=[{"role": "user", "content": f"Patient symptoms: {symptoms}"}]
     )
-
     return {"response": message.content[0].text}
 
 @app.post("/ai/chat")
@@ -167,7 +196,6 @@ async def ai_chat(data: dict):
     hospitals = supabase.table("hospitals").select("*").eq("district_id", district_id).execute().data
 
     df = pd.DataFrame(cases)
-
     if not df.empty:
         total_cases = int(df["case_count"].sum())
         top_disease = df.loc[df["case_count"].idxmax(), "disease_type"]
@@ -182,7 +210,6 @@ async def ai_chat(data: dict):
     hospital_names = [h["hospital_name"] for h in hospitals]
 
     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=400,
@@ -200,11 +227,9 @@ Answer health questions based on this real data. Be concise and helpful.
 Always suggest consulting real doctors for medical advice.""",
         messages=[{"role": "user", "content": question}]
     )
-
     return {"response": message.content[0].text}
 
-# ── Doctor Routes ──────────────────────────────────────────
-
+# ── Doctor Routes ─────────────────────────────────────────────
 @app.post("/doctor/login")
 def doctor_login(data: dict):
     unique_id = data.get("unique_id")
@@ -263,26 +288,17 @@ def get_hospital_attendance(hospital_id: int):
         .execute()
     return res.data
 
-# ============================================================
-# PATIENT ROUTES — Register + Login (No OTP)
-# ============================================================
-
-import hashlib
-
-def _hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
+# ── Patient Routes ────────────────────────────────────────────
 @app.post("/patient/register")
-def patient_register(data: dict):
+async def patient_register(data: dict):
     required = ["full_name", "aadhar_last4", "age", "gender", "address", "mobile", "password"]
     for field in required:
         if not data.get(field):
             return {"success": False, "message": f"'{field}' is required."}
 
-    mobile = str(data["mobile"]).strip()
+    mobile       = str(data["mobile"]).strip()
     aadhar_last4 = str(data["aadhar_last4"]).strip()
-    password = str(data["password"]).strip()
+    password     = str(data["password"]).strip()
 
     if not mobile.isdigit() or len(mobile) != 10:
         return {"success": False, "message": "Enter a valid 10-digit mobile number."}
@@ -317,8 +333,21 @@ def patient_register(data: dict):
         }).execute()
 
         patient = res.data[0]
+        uid = patient["uid"]
+
+        # ── SMS পাঠাও registration-এর পরে ──────────────────
+        sms_text = (
+            f"DHIS Registration Successful! "
+            f"Name: {patient['full_name']} | "
+            f"Your Patient ID: {uid} | "
+            f"Keep this ID safe. Show to any doctor for records. "
+            f"-District Health Intelligence System, West Bengal"
+        )
+        await send_sms(mobile, sms_text)
+        # ────────────────────────────────────────────────────
+
         patient.pop("password", None)
-        return {"success": True, "patient": patient, "uid": patient["uid"]}
+        return {"success": True, "patient": patient, "uid": uid}
     except Exception as e:
         return {"success": False, "message": str(e)}
 
