@@ -274,27 +274,8 @@ from datetime import datetime, timedelta, timezone
 FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
 
 async def _send_otp_sms(mobile: str, otp: str) -> bool:
-    if not FAST2SMS_KEY:
-        print(f"[DEV] OTP for {mobile}: {otp}")
-        return True
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            res = await client.post(
-                "https://www.fast2sms.com/dev/bulkV2",
-                headers={"authorization": FAST2SMS_KEY},
-                json={
-                    "route": "q",
-                    "message": f"Your DHIS OTP is {otp}. Valid for 5 minutes. Do not share with anyone.",
-                    "language": "english",
-                    "numbers": mobile,
-                },
-            )
-            data = res.json()
-            print(f"[Fast2SMS] {data}")
-            return data.get("return", False)
-    except Exception as e:
-        print(f"[Fast2SMS Error] {e}")
-        return False
+    print(f"[DEV] OTP for {mobile}: {otp}")
+    return True
 
 def _save_otp(mobile: str, otp: str):
     supabase.table("patient_otps").delete().eq("mobile", mobile).execute()
