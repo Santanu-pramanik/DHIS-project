@@ -279,10 +279,15 @@ async def _send_otp_sms(mobile: str, otp: str) -> bool:
         return True
     try:
         async with httpx.AsyncClient(timeout=10) as client:
-            res = await client.get(
+            res = await client.post(
                 "https://www.fast2sms.com/dev/bulkV2",
                 headers={"authorization": FAST2SMS_KEY},
-                params={"variables_values": otp, "route": "otp", "numbers": mobile},
+                json={
+                    "route": "q",
+                    "message": f"Your DHIS OTP is {otp}. Valid for 5 minutes. Do not share with anyone.",
+                    "language": "english",
+                    "numbers": mobile,
+                },
             )
             data = res.json()
             print(f"[Fast2SMS] {data}")
