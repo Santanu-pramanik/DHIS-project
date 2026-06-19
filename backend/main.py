@@ -261,3 +261,226 @@ def get_hospital_attendance(hospital_id: int):
         .eq("date", today)\
         .execute()
     return res.data
+
+# ============================================================
+# patient_routes_fast2sms.py
+# main.py-এর শেষে এই পুরো block paste করো
+# ============================================================
+
+import random
+import time
+import httpx  # already available with FastAPI
+
+# ── Fast2SMS config (from .env) ──────────────────────────────
+FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")  # .env-এ add করো
+
+# ── In-memory OTP store ──────────────────────────────────────
+# { "9876543210": { "otp": "482910", "expires": 1700000000 } }
+_otp_store: dict = {}
+
+
+async def _send_sms_fast2sms(mobile: str, otp: str) -> bool:
+    """Send OTP SMS via Fast2SMS DLT-free route."""
+    url = "https://www.fast2sms.com/dev/bulkV2"
+    headers = {"authorization": FAST2SMS_KEY}
+    params = {
+        "variables_values": otp,
+        "route": "otp",          # Fast2SMS OTP route — DLT registration lagbe na
+        "numbers": mobile,       # 10-digit Indian number
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            res = await client.get(url, headers=headers, params=params)
+            data = res.json()
+            print(f"[Fast2SMS] {data}")
+            return data.get("return", False)
+    except Exception as e:
+        print(f"[Fast2SMS Error] {e}")
+        return False
+
+
+# ── 1. SEND OTP ──────────────────────────────────────────────
+@app.post("/patient/send-otp")
+async def send_otp(data: dict):
+    mobile = data.get("mobile", "").strip()
+
+    if not mobile.isdigit() or len(mobile) != 10:
+        return {"success": False, "message": "Valid 10-digit mobile number dao"}
+
+    # Already registered check
+    existing = supabase.table("patients").select("uid").eq("mobile", mobile).execute()
+    if existing.data:
+        return {
+            "success": False,
+            "message": "Ei number diye already registration ache!",
+            "already_registered": True,
+            "uid": existing.data[0]["uid"]
+        }
+
+    # Generate OTP
+    otp = str(random.randint(100000, 999999))
+    expires = time.time() + 300  # 5 minutes
+
+    _otp_store[mobile] = {"otp": otp, "expires": expires}
+
+    # Send SMS
+    sent = await _send_sms_fast2sms(mobile, otp)
+
+    if not sent:
+        return {"success": False, "message": "SMS pathano jacche na. Fast2SMS API key check koro."}
+
+    return {
+        "success": True,
+        "message": f"✅ OTP pathano hoyeche +91{mobile} number-e. 5 minutes-er modhye dao."
+    }
+
+
+# ── 2. VERIFY OTP ────────────────────────────────────────────
+@app.post("/patient/verify-otp")
+def verify_otp(data: dict):
+    mobile = data.get("mobile", "").strip()
+    otp    = data.get("otp", "").strip()
+
+    stored = _otp_store.get(mobile)
+
+    if not stored:
+        return {"success": False, "verified": False, "message": "OTP paoua jacche na. Abar pathao."}
+
+    if time.time() > stored["expires"]:
+        _otp_store.pop(mobile, None)
+        return {"success": False, "verified": False, "message": "OTP expire hoe geche (5 min). Abar pathao."}
+
+    if stored["otp"] != otp:
+        return {"success": False, "verified": False, "message": "OTP ta thik nei. Abar check koro."}
+
+    _otp_store.pop(mobile, None)
+    return {"success": True, "verified": True, "message": "OTP verified!"}
+
+
+# ── 3. REGISTER PATIENT ──────────────────────────────────────
+@app.post("/patient/register")
+def register_patient(data: dict):
+    required = ["full_name", "aadhar_last4", "age", "gender", "mobile", "address"]
+    for field in required:
+        if not data.get(field):
+            return {"success": False, "message": f"'{field}' field missing"}
+
+    mobile       = data["mobile"].strip()
+    aadhar_last4 = data["aadhar_last4"].strip()
+
+    if not mobile.isdigit() or len(mobile) != 10:
+        return {"success": False, "message": "Invalid mobile number"}
+    if not aadhar_last4.isdigit() or len(aadhar_last4) != 4:
+        return {"success": False, "message": "Aadhaar last 4 digits must be 4 numbers"}
+
+    # Resolve district_id
+    district_id = None
+    district_name = data.get("district_name", "")
+    if district_name:
+        dist_res = supabase.table("districts").select("id").ilike("name", district_name).execute()
+        if dist_res.data:
+            district_id = dist_res.data[0]["id"]
+
+    insert_payload = {
+        "uid":          "",           # trigger auto-generates
+        "full_name":    data["full_name"].strip(),
+        "aadhar_last4": aadhar_last4,
+        "age":          int(data["age"]),
+        "gender":       data["gender"],
+        "blood_group":  data.get("blood_group") or None,
+        "mobile":       mobile,
+        "address":      data["address"].strip(),
+        "district_id":  district_id,
+        "allergies":    data.get("allergies") or None,
+        "conditions":   data.get("conditions") or None,
+    }
+
+    try:
+        res = supabase.table("patients").insert(insert_payload).execute()
+        patient = res.data[0]
+        return {"success": True, "patient": patient, "uid": patient["uid"]}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+# ── 4. GET PATIENT BY UID ────────────────────────────────────
+@app.get("/patient/{uid}")
+def get_patient(uid: str):
+    res = supabase.table("patients")\
+        .select("*, districts(name)")\
+        .eq("uid", uid.upper())\
+        .execute()
+    if not res.data:
+        return {"success": False, "message": "Patient paoua jacche na"}
+    return {"success": True, "patient": res.data[0]}
+
+
+# ── 5. GET PATIENT VISITS ────────────────────────────────────
+@app.get("/patient/{uid}/visits")
+def get_patient_visits(uid: str):
+    pat = supabase.table("patients").select("id").eq("uid", uid.upper()).execute()
+    if not pat.data:
+        return []
+    pid = pat.data[0]["id"]
+    res = supabase.table("patient_visits")\
+        .select("*, doctors(name, specialization), hospitals(hospital_name)")\
+        .eq("patient_id", pid)\
+        .order("visited_at", desc=True)\
+        .execute()
+    return res.data
+
+
+# ── 6. ADD VISIT / PRESCRIPTION ─────────────────────────────
+@app.post("/patient/{uid}/visit")
+def add_patient_visit(uid: str, data: dict):
+    pat = supabase.table("patients").select("id").eq("uid", uid.upper()).execute()
+    if not pat.data:
+        return {"success": False, "message": "Patient not found"}
+    pid = pat.data[0]["id"]
+
+    doctor_id = None
+    if data.get("doctor_name"):
+        dr = supabase.table("doctors").select("id")\
+            .ilike("name", f"%{data['doctor_name']}%").execute()
+        if dr.data:
+            doctor_id = dr.data[0]["id"]
+
+    hospital_id = None
+    if data.get("hospital_name"):
+        hosp = supabase.table("hospitals").select("id")\
+            .ilike("hospital_name", f"%{data['hospital_name']}%").execute()
+        if hosp.data:
+            hospital_id = hosp.data[0]["id"]
+
+    medicines_raw = data.get("medicines_raw", "")
+    medicines = [m.strip() for m in medicines_raw.split(",") if m.strip()] if medicines_raw else []
+
+    res = supabase.table("patient_visits").insert({
+        "patient_id":    pid,
+        "doctor_id":     doctor_id,
+        "hospital_id":   hospital_id,
+        "doctor_name":   data.get("doctor_name", ""),
+        "hospital_name": data.get("hospital_name") or None,
+        "diagnosis":     data.get("diagnosis", ""),
+        "medicines":     medicines,
+        "notes":         data.get("notes") or None,
+    }).execute()
+
+    return {"success": True, "visit": res.data[0]}
+
+
+# ── 7. GET ALL PATIENTS ──────────────────────────────────────
+@app.get("/patients")
+def get_all_patients():
+    res = supabase.table("patients")\
+        .select("*, districts(name)")\
+        .order("created_at", desc=True)\
+        .execute()
+    return res.data
+
+
+# ── 8. DELETE VISIT ──────────────────────────────────────────
+@app.delete("/patient/visit/{visit_id}")
+def delete_patient_visit(visit_id: str):
+    supabase.table("patient_visits").delete().eq("id", visit_id).execute()
+    return {"success": True}
