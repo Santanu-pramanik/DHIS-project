@@ -326,7 +326,7 @@ export default function PatientRegister({ onBack }) {
     </div>
   );
 
-  // ── DASHBOARD ──
+// ── DASHBOARD ──
   if (step === "dashboard" && patient) return wrap(
     <div style={{ ...cardStyle, maxWidth: 480, zIndex: 1 }}>
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #378ADD, #1D9E75)" }} />
@@ -335,13 +335,26 @@ export default function PatientRegister({ onBack }) {
         <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, rgba(55,138,221,0.3), rgba(29,158,117,0.3))", border: "2px solid rgba(55,138,221,0.4)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 26, fontWeight: 700, color: "#fff" }}>
           {patient.full_name?.[0]?.toUpperCase() || "P"}
         </div>
-        <div style={{ color: "#6ee7b7", fontSize: 12, fontWeight: 600, marginBottom: 4 }}>✓ {mode === "login" ? "Logged In" : "Registered"} Successfully</div>
-        <div style={{ color: "#fff", fontSize: 20, fontWeight: 700 }}>Welcome, {patient.full_name}!</div>
-        <div style={{ marginTop: 8, padding: "6px 14px", borderRadius: 20, background: "rgba(55,138,221,0.15)", border: "1px solid rgba(55,138,221,0.3)", display: "inline-block" }}>
-          <span style={{ color: "#8ba8c8", fontSize: 11 }}>Patient ID: </span>
-          <span style={{ color: "#93c5fd", fontWeight: 700, fontSize: 13 }}>{patient.uid}</span>
+        <div style={{ color: "#6ee7b7", fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+          ✓ {mode === "login" ? "Logged In" : "Registered"} Successfully
         </div>
-        <div style={{ color: "#ef4444", fontSize: 11, marginTop: 6 }}>⚠ Save this ID — you need it to login</div>
+        <div style={{ color: "#fff", fontSize: 20, fontWeight: 700 }}>Welcome, {patient.full_name}!</div>
+
+        {/* Patient ID box */}
+        <div style={{ marginTop: 12, padding: "16px 20px", borderRadius: 14, background: "rgba(55,138,221,0.12)", border: "2px solid rgba(55,138,221,0.4)", textAlign: "center" }}>
+          <div style={{ color: "#8ba8c8", fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 6 }}>YOUR PATIENT ID</div>
+          <div style={{ color: "#fff", fontWeight: 800, fontSize: 28, letterSpacing: 2 }}>{patient.uid}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 8 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444" }} />
+            <span style={{ color: "#fca5a5", fontSize: 12, fontWeight: 600 }}>Save this ID — you need it to login next time</span>
+          </div>
+          <button
+            onClick={() => { navigator.clipboard.writeText(patient.uid); alert("Patient ID copied!"); }}
+            style={{ marginTop: 10, padding: "6px 16px", borderRadius: 8, border: "1px solid rgba(55,138,221,0.4)", background: "rgba(55,138,221,0.15)", color: "#93c5fd", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+          >
+            📋 Copy ID
+          </button>
+        </div>
       </div>
 
       <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 20 }} />
