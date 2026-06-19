@@ -5,6 +5,7 @@ import HospitalPage from "./HospitalPage"
 import AIAssistant from "./AIAssistant"
 import DoctorLogin from "./DoctorLogin"
 import DoctorDashboard from "./DoctorDashboard"
+import westBengalImg from "./assets/west_bengal_img.png"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -28,7 +29,11 @@ const RLEGEND = ({ payload }) => (
     {payload.map((entry, i) => (
       <span key={i} style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#444" }}>
         <span style={{ width:12, height:12, borderRadius:2, background:entry.color, display:"inline-block", flexShrink:0 }}></span>
-        <span style={{ fontWeight:600 }}>{entry.payload.name}</span>: {entry.payload.value?.toLocaleString()}
+        <span style={{ fontWeight:600, color:"#ffffff" }}>{entry.payload.name}
+</span>
+: <span style={{color:"#ffffff"}}>
+  {entry.payload.value?.toLocaleString()}
+</span>
       </span>
     ))}
   </div>
@@ -199,29 +204,36 @@ export default function App() {
   )
 
   const districtBar = (
-    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, position:"sticky", top:56, background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)", zIndex:50, padding:"12px 0" }}>
-      <span style={{ fontSize:13, color:"#333", fontWeight:600 }}>District:</span>
+    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20, position:"sticky", top:56, background:"rgba(10,20,40,0.25)",
+  backdropFilter:"blur(12px)",
+  WebkitBackdropFilter:"blur(5px)",
+  zIndex:50,
+  padding:"12px 15px",
+  border:"1px solid rgba(255,255,255,0.15)",
+  borderRadius:12 }}>
+      <span style={{ fontSize:13, color:"#ffffff", fontWeight:600 }}>District:</span>
       <select value={selectedDistrict || ""} onChange={e => setSelectedDistrict(Number(e.target.value))}
-style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontSize:14, background:"#fff", color:"#1a2236", cursor:"pointer", minWidth:160 }}>        {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #rgba(255,255,255,0.4)", fontSize:14, background:"#0b1628", color:"#ffffff", cursor:"pointer", minWidth:160 }}>        {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
       </select>
-      {analysis && <span style={{ fontSize:13, color:"#555" }}>Total: <b style={{ color:"#1a2236" }}>{analysis.total_cases?.toLocaleString()}</b> cases</span>}
+      {analysis && <span style={{ fontSize:13, color:"#ffffff" }}>Total: <b style={{ color:"#ffffff" }}>{analysis.total_cases?.toLocaleString()}</b> cases</span>}
     </div>
   )
 
   const kpi = (label, value, color="#1a2236", sub=null, icon=null) => (
-    <div style={{ background:"rgba(255,255,255,0.92)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)", flex:1, minWidth:180, backdropFilter:"blur(4px)" }}>
-      <div style={{ fontSize:12, color:"#888", marginBottom:6, textTransform:"uppercase", letterSpacing:.5, display:"flex", alignItems:"center", gap:5 }}>
-        {icon} {label}
+    <div style={{ background:"rgba(10,20,40,0.02)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.15)", flex:1, minWidth:220, backdropFilter:"blur(3px)", border:"1px solid rgba(255,255,255,0.25)", cursor:"default" }}>
+      <div style={{ fontSize:12, color:"#fff", marginBottom:6, textTransform:"uppercase", letterSpacing:.5, display:"flex", alignItems:"center", gap:5 }}>
+        <span style={{color:color}}>
+     {icon}
+     </span>
+     {label}
       </div>
-      <div style={{ fontSize:28, fontWeight:700, color }}>{value}</div>
-      {sub && <div style={{ fontSize:12, color:"#aaa", marginTop:4 }}>{sub}</div>}
+      <div style={{ fontSize:28, fontWeight:700, color:color }}>{value}</div>
+      {sub && <div style={{ fontSize:12, color:"#fff", marginTop:4 }}>{sub}</div>}
     </div>
   )
 
   const dashboardPage = (
-    <div style={{ padding:"28px 32px", maxWidth:"100%", margin:"0 auto", position:"relative", minHeight:"100vh",
-      background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)" }}>
-
+    <div style={{ padding:"28px 32px", maxWidth:"100%", margin:"0 auto", position:"relative", minHeight:"100vh"}}>
       {/* West Bengal watermark */}
       <div style={{ position:"fixed", right:"2%", top:"50%", transform:"translateY(-50%)", opacity:0.06, pointerEvents:"none", zIndex:0 }}>
         <svg width="500" height="600" viewBox="165 45 155 195">
@@ -236,12 +248,12 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
         {analysis && !loading && (
           <>
             <div style={{ display:"flex", gap:14, marginBottom:24, flexWrap:"wrap" }}>
-              {kpi("Total Cases", analysis.total_cases?.toLocaleString(), "#1a2236", null, <Activity size={13} />)}
-              {kpi("Top Disease", analysis.top_disease, "#D85A30", `${analysis.top_count?.toLocaleString()} cases`, <AlertCircle size={13} />)}
-              {kpi("Total Hospitals", analysis.total_hospitals, "#1D9E75", null, <Building2 size={13} />)}
+              {kpi("Total Cases", analysis.total_cases?.toLocaleString(), "#ec4899", null, <Activity size={13} />)}
+              {kpi("Top Disease", analysis.top_disease, "#facc15", `${analysis.top_count?.toLocaleString()} cases`, <AlertCircle size={13} />)}
+              {kpi("Total Hospitals", analysis.total_hospitals, "#c247fc", null, <Building2 size={13} />)}
               {kpi("Doctor Shortage",
                 analysis.shortage > 0 ? `${analysis.shortage} short` : "Fully Staffed",
-                analysis.shortage > 0 ? "#e24b4a" : "#1D9E75",
+                analysis.shortage > 0 ? "#c979ff" : "#50e7b7",
                 `Required: ${analysis.required_doctors} | Available: ${analysis.available_doctors}`,
                 <Stethoscope size={13} />)}
             </div>
@@ -256,15 +268,15 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
 </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:18, marginBottom:18 }}>
-              <div style={{ background:"rgba(255,255,255,0.95)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
+              <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.015)",border:"1px solid rgba(255,255,255,0.35)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-                  <div style={{ fontSize:15, fontWeight:700, color:"#1a2236" }}>Disease Breakdown</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:"#ffffff" }}>Disease Breakdown</div>
                   <div style={{ fontSize:12, color:"#888" }}>Total: <b style={{ color:"#378ADD" }}>{barData.reduce((a,b) => a + b.cases, 0).toLocaleString()}</b> cases</div>
                 </div>
                 <ResponsiveContainer width="100%" height={Math.max(400, barData.length * 35)}>
                   <BarChart data={barData} layout="vertical" margin={{ left:10, right:60, top:4, bottom:4 }}>
-                    <XAxis type="number" tick={{ fontSize:11 }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
-                    <YAxis dataKey="name" type="category" width={200} tick={{ fontSize:11 }} />
+                    <XAxis type="number" tick={{ fontSize:11,fill:"#ffffff" }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
+                    <YAxis dataKey="name" type="category" width={200} tick={{ fontSize:11,fill:"#ffffff" }} />
                     <Tooltip cursor={{ fill:"rgba(55,138,221,0.08)" }} content={({ active, payload }) => {
                       if (active && payload && payload.length) return (
                         <div style={{ background:"#1a2236", padding:"10px 16px", borderRadius:10, color:"#fff", boxShadow:"0 4px 12px rgba(0,0,0,0.3)" }}>
@@ -281,8 +293,8 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
                 </ResponsiveContainer>
               </div>
 
-              <div style={{ background:"rgba(255,255,255,0.95)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.07)" }}>
-                <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#1a2236" }}>Category Summary</div>
+              <div style={{ background:"rgba(255,255,255,0.02)", borderRadius:14, padding:"20px 24px", boxShadow:"0 2px 8px rgba(0,0,0,0.15)",border:"1px solid rgba(255,255,255,0.35)" }}>
+                <div style={{ fontSize:15, fontWeight:700, marginBottom:16, color:"#ffffff" }}>Category Summary</div>
                 <ResponsiveContainer width="100%" height={360}>
                   <PieChart>
                     <Pie data={catData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={110}
@@ -292,7 +304,7 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
                         const x = cx + radius * Math.cos(-midAngle * RADIAN)
                         const y = cy + radius * Math.sin(-midAngle * RADIAN)
                         return (
-                          <text x={x} y={y} textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={12} fontWeight={600} fill="#333">
+                          <text x={x} y={y} textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={12} fontWeight={600} fill="#ffffff">
                             {`${name} ${(percent*100).toFixed(0)}%`}
                           </text>
                         )
@@ -314,7 +326,17 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
 
   const loginPage = (
     <div style={{ display:"flex", justifyContent:"center", alignItems:"center", minHeight:"80vh" }}>
-      <div style={{ background:"#fff", borderRadius:20, padding:"48px 56px", boxShadow:"0 8px 32px rgba(0,0,0,0.12)", minWidth:360, textAlign:"center" }}>
+      <div style={{
+  background:"rgba(255,255,255,0.02)",
+  borderRadius:20,
+  padding:"48px 56px",
+  boxShadow:"0 8px 32px rgba(0,0,0,0.25)",
+  backdropFilter:"blur(2px)",
+  WebkitBackdropFilter:"blur(2px)",
+  border:"1px solid rgba(255,255,255,0.25)",
+  minWidth:360,
+  textAlign:"center"
+}}>
         <ShieldCheck size={48} color="#378ADD" style={{ marginBottom:12 }} />
         <div style={{ fontSize:22, fontWeight:700, marginBottom:6 }}>Admin Login</div>
         <div style={{ fontSize:13, color:"#888", marginBottom:28 }}>Only authorized admin can access this panel</div>
@@ -339,7 +361,7 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
     <div style={{ padding:"28px 32px", maxWidth:900 }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <div>
-          <div style={{ fontSize:20, fontWeight:700, color:"#1a2236", display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ fontSize:20, fontWeight:700, color:"#ffffff", display:"flex", alignItems:"center", gap:8 }}>
             <ShieldCheck size={22} color="#378ADD" /> Admin Panel
           </div>
           <div style={{ fontSize:13, color:"#888", marginTop:2 }}>Manage health data in the database</div>
@@ -352,13 +374,14 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
 
       {districtBar}
 
-      <div style={{ background:"#fff", borderRadius:16, padding:"28px 32px", boxShadow:"0 2px 12px rgba(0,0,0,0.08)", marginBottom:24 }}>
-        <div style={{ fontSize:16, fontWeight:700, marginBottom:22, color:"#1a2236", display:"flex", alignItems:"center", gap:8 }}>
+      <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:16,padding:"28px 32px",boxShadow:"0 8px 25px rgba(0,0,0,0.15)",
+       backdropFilter:"blur(1px)",WebkitBackdropFilter:"blur(2px)",border:"1px solid rgba(255,255,255,0.25)",marginBottom:24}}>
+        <div style={{ fontSize:16, fontWeight:700, marginBottom:22, color:"#ffffff", display:"flex", alignItems:"center", gap:8 }}>
           <Plus size={18} color="#378ADD" /> Add New Disease Case
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           <div>
-            <label style={{ fontSize:12, color:"#555", display:"block", marginBottom:5, fontWeight:600 }}>Disease Name *</label>
+            <label style={{ fontSize:12, color:"#ffffff", display:"block", marginBottom:5, fontWeight:600 }}>Disease Name *</label>
             <input placeholder="e.g. Dengue, Malaria" value={form.disease_type}
               onChange={e => setForm({ ...form, disease_type: e.target.value })}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:"1.5px solid #e5e7eb", fontSize:14, boxSizing:"border-box" }} />
@@ -374,13 +397,13 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
             )}
           </div>
           <div>
-            <label style={{ fontSize:12, color:"#555", display:"block", marginBottom:5, fontWeight:600 }}>Case Count *</label>
+            <label style={{ fontSize:12, color:"#ffffff", display:"block", marginBottom:5, fontWeight:600 }}>Case Count *</label>
             <input type="number" placeholder="e.g. 500" value={form.case_count}
               onChange={e => setForm({ ...form, case_count: e.target.value })}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:"1.5px solid #e5e7eb", fontSize:14, boxSizing:"border-box" }} />
           </div>
           <div>
-            <label style={{ fontSize:12, color:"#555", display:"block", marginBottom:5, fontWeight:600 }}>Category</label>
+            <label style={{ fontSize:12, color:"#ffffff", display:"block", marginBottom:5, fontWeight:600 }}>Category</label>
             <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:"1.5px solid #e5e7eb", fontSize:14 }}>
               <option>Infectious Disease</option>
@@ -389,14 +412,14 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
             </select>
           </div>
           <div>
-            <label style={{ fontSize:12, color:"#555", display:"block", marginBottom:5, fontWeight:600 }}>Month</label>
+            <label style={{ fontSize:12, color:"#ffffff", display:"block", marginBottom:5, fontWeight:600 }}>Month</label>
             <select value={form.month} onChange={e => setForm({ ...form, month: e.target.value })}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, border:"1.5px solid #e5e7eb", fontSize:14 }}>
               {["January","February","March","April","May","June","July","August","September","October","November","December"].map(m => <option key={m}>{m}</option>)}
             </select>
           </div>
           <div>
-            <label style={{ fontSize:12, color:"#555", display:"block", marginBottom:5, fontWeight:600 }}>Year (max {MAX_YEAR})</label>
+            <label style={{ fontSize:12, color:"#ffffff", display:"block", marginBottom:5, fontWeight:600 }}>Year (max {MAX_YEAR})</label>
             <input type="number" value={form.year} max={MAX_YEAR} min={2000}
               onChange={e => setForm({ ...form, year: e.target.value })}
               style={{ width:"100%", padding:"10px 12px", borderRadius:8, fontSize:14, boxSizing:"border-box",
@@ -424,14 +447,15 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
         )}
       </div>
 
-      <div style={{ background:"#fff", borderRadius:16, padding:"28px 32px", boxShadow:"0 2px 12px rgba(0,0,0,0.08)" }}>
-        <div style={{ fontSize:16, fontWeight:700, marginBottom:18, color:"#1a2236" }}>Existing Records</div>
+      <div style={{background:"rgba(255,255,255,0.02)",borderRadius:16,padding:"28px 32px",boxShadow:"0 8px 25px rgba(0,0,0,0.15)",backdropFilter:"blur(1px)",
+       WebkitBackdropFilter:"blur(2px)",border:"1px solid rgba(255,255,255,0.25)"}}>
+        <div style={{ fontSize:16, fontWeight:700, marginBottom:18, color:"#ffffff" }}>Existing Records</div>
         <div style={{ overflowX:"auto" }}>
           <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
             <thead>
               <tr style={{ background:"#f8fafc" }}>
                 {["Disease","Category","Cases","Month","Year","Actions"].map(h => (
-                  <th key={h} style={{ padding:"10px 14px", textAlign:"left", fontWeight:600, color:"#555", borderBottom:"1px solid #e5e7eb" }}>{h}</th>
+                  <th key={h} style={{ padding:"10px 14px", textAlign:"left", fontWeight:600, color:"#000000", borderBottom:"1px solid #e5e7eb" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -473,7 +497,7 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #ccd6e0", fontS
                             <Save size={12} /> Save
                           </button>
                           <button onClick={() => setEditingId(null)}
-                            style={{ padding:"5px 10px", borderRadius:6, background:"#e5e7eb", color:"#555", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontSize:12 }}>
+                            style={{ padding:"5px 10px", borderRadius:6, background:"#e5e7eb", color:"#ffffff", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontSize:12 }}>
                             <X size={12} /> Cancel
                           </button>
                         </div>
@@ -560,7 +584,18 @@ if (currentPage === "doctor") {
   />
 }
   return (
-    <div style={{ fontFamily:"system-ui,sans-serif", minHeight:"100vh", background:"linear-gradient(135deg, #f0f4f8 0%, #e8f0f8 100%)" }}>
+  <div
+    style={{fontFamily:"system-ui,sans-serif",minHeight:"100vh",width:"100%",
+      backgroundImage:`
+        linear-gradient(
+          rgba(5,20,40,0.75),
+          rgba(5,20,40,0.85)
+        ),
+        url(${westBengalImg})
+      `,
+      backgroundSize:"cover",backgroundPosition:"center",backgroundRepeat:"no-repeat"
+    }}
+  >
       {navbar}
       {page === "dashboard" && dashboardPage}
       {page === "admin" && !adminLoggedIn && loginPage}
