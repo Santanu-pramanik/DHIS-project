@@ -234,6 +234,16 @@ export default function LandingPage({ onNavigate }) {
           <button onClick={() => onNavigate("admin")} style={{ padding: "9px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #378ADD, #2563eb)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
             <ShieldCheck size={14} /> Admin Panel
           </button>
+          <button onClick={() => onNavigate("patient")} style={{ 
+  padding: "9px 22px", borderRadius: 10, 
+  border: "1px solid rgba(29,158,117,0.4)", 
+  background: "rgba(29,158,117,0.08)", 
+  color: "#6ee7b7", cursor: "pointer", 
+  fontSize: 13, fontWeight: 600, 
+  display: "flex", alignItems: "center", gap: 6 
+}}>
+  🏥 Patient Register
+</button>
           <button onClick={() => onNavigate("doctor")} style={{ padding: "9px 22px", borderRadius: 10, border: "1px solid rgba(29,158,117,0.4)", background: "rgba(29,158,117,0.08)", color: "#6ee7b7", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.08)")}>
             <Stethoscope size={14} /> Doctor Login
           </button>

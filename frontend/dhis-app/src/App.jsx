@@ -6,6 +6,7 @@ import AIAssistant from "./AIAssistant"
 import DoctorLogin from "./DoctorLogin"
 import DoctorDashboard from "./DoctorDashboard"
 import westBengalImg from "./assets/west_bengal_img.png"
+import PatientRegister from "./PatientRegister"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -59,7 +60,7 @@ export default function App() {
   const [editForm, setEditForm] = useState({})
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [allCases, setAllCases] = useState([])
-
+  const [showPatientReg, setShowPatientReg] = useState(false)
   useEffect(() => {
     const session = sessionStorage.getItem(SESSION_KEY)
     if (session === "true") setAdminLoggedIn(true)
@@ -548,6 +549,8 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #rgba(255,255,2
     </div>
   )
 
+  if (showPatientReg) return <PatientRegister onBack={() => setShowPatientReg(false)} />
+
 if (currentPage === "landing") {
   return <LandingPage onNavigate={(p) => {
     if (p === "doctor") {
@@ -560,10 +563,9 @@ if (currentPage === "landing") {
 
 if (currentPage === "landing") {
   return <LandingPage onNavigate={(p) => {
-    if (p === "doctor") {
-      setCurrentPage("doctor")
-    } else {
-      setCurrentPage("app"); setPage(p)
+     if (p === "patient") setShowPatientReg(true)
+    else if (p === "doctor") setCurrentPage(doctor)
+    else {setCurrentPage("app"); setPage(p)
     }
   }} />
 }
