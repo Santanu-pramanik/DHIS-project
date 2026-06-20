@@ -24,8 +24,8 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
 
 # ── SMS Helper ───────────────────────────────────────────────
-async def send_sms(mobile: str, message: str) -> bool:
-    """Send SMS via Fast2SMS"""
+async def send_sms(mobile: str, otp_or_id: str) -> bool:
+    """Send SMS via Fast2SMS OTP route"""
     if not FAST2SMS_KEY:
         print("[SMS] FAST2SMS_API_KEY not set, skipping SMS")
         return False
@@ -35,8 +35,8 @@ async def send_sms(mobile: str, message: str) -> bool:
                 "https://www.fast2sms.com/dev/bulkV2",
                 headers={"authorization": FAST2SMS_KEY},
                 params={
-                    "variables_values": message,
-                    "route": "q",          # quick transactional route
+                    "variables_values": otp_or_id,
+                    "route": "otp",        # ← "q" এর বদলে "otp"
                     "numbers": mobile,
                 }
             )
@@ -46,7 +46,6 @@ async def send_sms(mobile: str, message: str) -> bool:
     except Exception as e:
         print(f"[Fast2SMS Error] {e}")
         return False
-
 # ── Password helper ──────────────────────────────────────────
 def _hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
@@ -336,13 +335,8 @@ async def patient_register(data: dict):
         uid = patient["uid"]
 
         # ── SMS পাঠাও registration-এর পরে ──────────────────
-        sms_text = (
-            f"DHIS Registration Successful! "
-            f"Name: {patient['full_name']} | "
-            f"Your Patient ID: {uid} | "
-            f"Keep this ID safe. Show to any doctor for records. "
-            f"-District Health Intelligence System, West Bengal"
-        )
+        # ── SMS পাঠাও registration-এর পরে ──────────────────
+        sms_text = f"DHIS Patient ID: {uid} | Name: {patient['full_name']} | Keep this ID safe to access your health records."
         await send_sms(mobile, sms_text)
         # ────────────────────────────────────────────────────
 
