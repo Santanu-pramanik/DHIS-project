@@ -350,6 +350,7 @@ export default function LandingPage({ onNavigate }) {
           </div>
         </div>
       </div>
+      
 {/* ── PATIENT REGISTRATION CARD ── */}
       <div style={{
         display: "flex",
