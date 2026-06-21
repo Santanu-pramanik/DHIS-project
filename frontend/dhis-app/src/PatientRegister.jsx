@@ -20,6 +20,7 @@ export default function PatientRegister({ onBack }) {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
+  const [appointments, setAppointments] = useState([]);
 
   const [form, setForm] = useState({
     full_name: "", aadhar: "", age: "", gender: "Male",
@@ -250,7 +251,6 @@ export default function PatientRegister({ onBack }) {
           <label style={labelStyle}>FULL NAME *</label>
           <input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} placeholder="Enter your full name" style={inputStyle} />
         </div>
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={labelStyle}>MOBILE NUMBER *</label>
@@ -358,7 +358,7 @@ export default function PatientRegister({ onBack }) {
       </div>
 
       <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 20 }} />
-
+       {mode !== "login" && (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
         {[
           ["Age", `${patient.age} yrs`, "#378ADD"],
@@ -372,6 +372,136 @@ export default function PatientRegister({ onBack }) {
           </div>
         ))}
       </div>
+       )}
+
+       {mode === "login" && (
+      <div
+        style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 16,
+        marginBottom: 20,
+      }} >
+      <div
+        onClick={() => setStep("profile")}
+        style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 18,
+        minHeight: 60,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+      onMouseOver={(e) => {
+      e.currentTarget.style.background = "rgba(55,138,221,0.15)";
+      e.currentTarget.style.border = "1px solid rgba(55,138,221,0.5)";
+      e.currentTarget.style.transform = "translateY(-3px)";
+      }}
+      onMouseOut={(e) => {
+      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+      e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+      e.currentTarget.style.transform = "translateY(0)";
+     }}
+      >
+      <div style={{ color: "#378ADD", fontWeight: 700, fontSize: 15 }}>
+        👤 View Full Profile
+      </div>
+      <div style={{ color: "#8ba8c8", fontSize: 12, marginTop: 6}}>
+        See complete patient information
+      </div>
+    </div>
+
+    <div
+      onClick={() => setStep("uploadPrescription")}
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 18,
+        minHeight: 60,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+      onMouseOver={(e) => {
+      e.currentTarget.style.background = "rgba(29,158,117,0.15)";
+      e.currentTarget.style.border = "1px solid rgba(29,158,117,0.5)";
+      e.currentTarget.style.transform = "translateY(-3px)";
+      }}
+      onMouseOut={(e) => {
+      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+      e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+      e.currentTarget.style.transform = "translateY(0)";
+     }}
+    >
+      <div style={{ color: "#1D9E75", fontWeight: 700, fontSize: 15 }}>
+        📄 Upload Prescription
+      </div>
+      <div style={{ color: "#8ba8c8", fontSize: 12, marginTop: 6 }}>
+        Upload medical documents
+      </div>
+    </div>
+
+    <div
+      onClick={() => setStep("appointment")}
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 18,
+        minHeight: 60,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+      onMouseOver={(e) => {
+      e.currentTarget.style.background = "rgba(167,139,250,0.15)";
+      e.currentTarget.style.border = "1px solid rgba(167,139,250,0.5)";
+      e.currentTarget.style.transform = "translateY(-3px)";
+      }}
+      onMouseOut={(e) => {
+      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+      e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+      e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15 }}>
+        📅 Book Appointment
+      </div>
+      <div style={{ color: "#8ba8c8", fontSize: 12, marginTop: 6 }}>
+        Schedule hospital visit
+      </div>
+    </div>
+
+    <div
+      onClick={() => setStep("myAppointment")}
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 18,
+        minHeight: 60,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+      onMouseOver={(e) => {
+      e.currentTarget.style.background = "rgba(245,158,11,0.15)";
+      e.currentTarget.style.border = "1px solid rgba(245,158,11,0.5)";
+      e.currentTarget.style.transform = "translateY(-3px)";
+      }}
+      onMouseOut={(e) => {
+      e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+      e.currentTarget.style.border = "1px solid rgba(255,255,255,0.08)";
+      e.currentTarget.style.transform = "translateY(0)";
+      }}>
+    <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: 15  }}>
+      🏥 My Appointment
+    </div>
+    <div style={{ color: "#8ba8c8", fontSize: 12, marginTop: 6 }}>
+      View appointment details
+    </div>
+    </div>
+   </div>
+   )}
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderRadius: 12, background: "rgba(29,158,117,0.1)", border: "1px solid rgba(29,158,117,0.25)", marginBottom: 20 }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#1D9E75" }} />
@@ -383,6 +513,381 @@ export default function PatientRegister({ onBack }) {
       </button>
     </div>
   );
+  
+  // ── PROFILE PAGE ──
+if (step === "profile" && patient) return wrap(
+  <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
+
+  <div style={{ textAlign: "center", marginBottom: 20 }}>
+    <h2 style={{ color: "#378ADD", marginBottom: 10 }}>
+      👤 PATIENT PROFILE
+    </h2>
+    <div
+      style={{
+        height: 2,
+        background: "linear-gradient(90deg, #378ADD, #1D9E75)",
+        borderRadius: 10,
+      }}
+    />
+  </div>
+
+  <div
+  style={{
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 14,
+    padding: "20px 16px",
+    color: "#fff",
+  }}
+>
+  <div style={{ display: "grid", gridTemplateColumns: "130px 15px 1fr", rowGap: 12, textAlign: "left", fontSize: 14, lineHeight: 1.5 }}>
+
+    <strong>Patient ID</strong>
+    <span>:</span>
+    <span>{patient.uid}</span>
+
+    <strong>Full Name</strong>
+    <span>:</span>
+    <span>{patient.full_name}</span>
+
+    <strong>Mobile Number</strong>
+    <span>:</span>
+    <span>{patient.mobile}</span>
+
+    <strong>Aadhaar</strong>
+    <span>:</span>
+    <span>XXXX XXXX {patient.aadhar_last4}</span>
+
+    <strong>Age</strong>
+    <span>:</span>
+    <span>{patient.age}</span>
+
+    <strong>Gender</strong>
+    <span>:</span>
+    <span>{patient.gender}</span>
+
+    <strong>Blood Group</strong>
+    <span>:</span>
+    <span>{patient.blood_group}</span>
+
+    <strong>District</strong>
+    <span>:</span>
+    <span>{patient.districts?.name || "N/A"}</span>
+
+    <strong>Address</strong>
+    <span>:</span>
+    <span>{patient.address}</span>
+
+  </div>
+</div>
+
+    <hr style={{ margin: "20px 0", opacity: 0.2 }} />
+
+    <h3 style={{ color: "#1D9E75" }}>
+      📄 Prescription History
+    </h3>
+
+    <p style={{ color: "#8ba8c8" }}>
+      No prescriptions uploaded yet
+    </p>
+
+    <hr style={{ margin: "20px 0", opacity: 0.2 }} />
+
+    <h3 style={{ color: "#a78bfa" }}>
+      📅 Appointment History
+    </h3>
+
+    <p style={{ color: "#8ba8c8" }}>
+      No appointments booked yet
+    </p>
+
+  <button
+    onClick={() => setStep("dashboard")}
+    style={{ ...primaryBtn, marginTop: 20 }}
+  >
+    <ArrowLeft size={15} />
+    Back 
+  </button>
+
+   </div>
+  ); 
+
+  // ── UPLOAD PRESCRIPTION PAGE ──
+if (step === "uploadPrescription" && patient) return wrap(
+  <div style={{ ...cardStyle, maxWidth: 600, zIndex: 1 }}>
+
+    <div style={{ textAlign: "center", marginBottom: 20 }}>
+      <h2 style={{ color: "#1D9E75" }}>
+        📄 Upload Prescription
+      </h2>
+    </div>
+
+    <div
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 20,
+      }}
+    >
+      <p style={{ color: "#8ba8c8" }}>
+        Upload your prescription, test report or medical document.
+      </p>
+
+      <input
+        type="file"
+        style={{
+          width: "100%",
+          marginTop: 15,
+          color: "#fff",
+        }}
+      />
+
+      <button
+        style={{
+          ...primaryBtn,
+          marginTop: 20,
+          width: "100%",
+        }}
+      >
+        Upload File
+      </button>
+    </div>
+
+    <div
+      style={{
+        marginTop: 20,
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 20,
+      }}
+    >
+      <h3 style={{ color: "#1D9E75" }}>
+        Uploaded Files
+      </h3>
+
+      <p style={{ color: "#8ba8c8" }}>
+        No files uploaded yet
+      </p>
+    </div>
+
+    <button
+      onClick={() => setStep("dashboard")}
+      style={{ ...primaryBtn, marginTop: 20 }}
+    >
+      <ArrowLeft size={15} />
+      Back
+    </button>
+
+  </div>
+);
+
+// ── BOOK APPOINTMENT PAGE ──
+if (step === "appointment" && patient) return wrap(
+  <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
+
+    <div style={{ textAlign: "center", marginBottom: 20 }}>
+      <h2 style={{ color: "#a78bfa" }}>
+        📅 Book Appointment
+      </h2>
+    </div>
+
+    <div
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 14,
+        padding: 20,
+      }}
+    >
+
+      <label style={{ color: "#8ba8c8"}}>
+        Select District
+      </label>
+      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
+        <option>Hooghly</option>
+      </select>
+
+      <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
+        Select Hospital
+      </label>
+      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
+        <option>Chinsurah District Hospital</option>
+      </select>
+
+      <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
+        Department
+      </label>
+      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%"   }}>
+        <option>General Medicine</option>
+        <option>Cardiology</option>
+        <option>Neurology</option>
+        <option>Orthopedics</option>
+      </select>
+
+      <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
+        Doctor
+      </label>
+      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
+        <option>Dr. Amit Roy</option>
+      </select>
+
+      <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
+        Appointment Date
+      </label>
+      <input
+        type="date"
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
+      />
+
+      <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
+        Appointment Time
+      </label>
+      <input
+        type="time"
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
+      />
+
+      <button
+        style={{
+          ...primaryBtn,
+          marginTop: 30,
+          padding: "6px 10px", 
+          height : "50px",
+          width: "100%",
+        }}
+      >
+        Confirm Appointment
+      </button>
+
+    </div>
+
+    <button
+      onClick={() => setStep("dashboard")}
+      style={{ ...primaryBtn, marginTop: 20, padding: "6px 16px", height : "50px", width: "100%" }}
+    >
+      <ArrowLeft size={15} />
+      Back 
+    </button>
+
+  </div>
+);
+
+//Appointment list page
+
+if (step === "myAppointment" && patient) return wrap(
+  <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
+
+    {/* HEADER */}
+    <div style={{ textAlign: "center", marginBottom: 15 }}>
+      <h2 style={{ color: "#f59e0b" }}>
+        🏥 My Appointments
+      </h2>
+    </div>
+
+    {/* WELCOME BOX */}
+    <div
+      style={{
+        background: "rgba(245,158,11,0.08)",
+        border: "1px solid rgba(245,158,11,0.3)",
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 15,
+        textAlign: "center"
+      }}
+    >
+      <div style={{ color: "#fff", fontSize: 20, fontWeight: 700 }}>
+        Welcome, {patient.full_name}
+      </div>
+
+      <div style={{ color: "#8ba8c8", fontSize: 16, marginTop: 4 }}>
+        Patient ID: {patient.uid}
+      </div>
+    </div>
+
+    {/* EMPTY STATE */}
+    {(!appointments || appointments.length === 0) && (
+      <div
+        style={{
+          textAlign: "center",
+          padding: 20,
+          color: "#8ba8c8",
+          background: "rgba(255,255,255,0.04)",
+          borderRadius: 12,
+          border: "1px solid rgba(255,255,255,0.08)"
+        }}
+      >
+        🚫 No appointments found
+      </div>
+    )}
+
+    {/* APPOINTMENT LIST */}
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 15 }}>
+
+      {appointments?.map((app, index) => (
+        <div
+          key={index}
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 14,
+            padding: 16,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
+
+          {/* LEFT */}
+          <div>
+            <div style={{ color: "#fff", fontWeight: 700 }}>
+              {app.doctor_name}
+            </div>
+            <div style={{ color: "#8ba8c8", fontSize: 13 }}>
+              {app.hospital}
+            </div>
+            <div style={{ color: "#8ba8c8", fontSize: 12 }}>
+              📅 {app.appointment_date}
+            </div>
+          </div>
+
+          {/* RIGHT */}
+          <div style={{ textAlign: "right" }}>
+            <div
+              style={{
+                padding: "5px 10px",
+                borderRadius: 6,
+                color: "#fff",
+                fontSize: 12,
+                background:
+                  app.status === "Approved"
+                    ? "green"
+                    : app.status === "Cancelled"
+                    ? "red"
+                    : "orange"
+              }}
+            >
+              {app.status}
+            </div>
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+    {/* BACK BUTTON */}
+
+    <button
+      onClick={() => setStep("dashboard")}
+      style={{ ...primaryBtn, marginTop: 20, padding: "6px 16px", height : "50px", width: "100%" }}
+    >
+      <ArrowLeft size={15} />
+      Back 
+    </button>
+
+  </div>
+);
 
   return null;
 }
