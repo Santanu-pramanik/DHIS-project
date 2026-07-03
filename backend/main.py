@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
 import pandas as pd
@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import anthropic
 import hashlib
 import httpx
+import uuid
+from datetime import datetime, timezone
 
 load_dotenv()
 
@@ -447,4 +449,63 @@ def get_all_patients():
 @app.delete("/patient/visit/{visit_id}")
 def delete_patient_visit(visit_id: str):
     supabase.table("patient_visits").delete().eq("id", visit_id).execute()
+    return {"success": True}
+
+
+# ── Prescription Routes ─────────────────────────────────────────
+PRESCRIPTION_BUCKET = "prescriptions"
+
+@app.post("/patient/{uid}/prescription/upload")
+async def upload_prescription(uid: str, file: UploadFile = File(...)):
+    uid = uid.upper()
+    pat = supabase.table("patients").select("id").eq("uid", uid).execute()
+    if not pat.data:
+        return {"success": False, "message": "Patient not found."}
+
+    try:
+        file_bytes = await file.read()
+        safe_name = file.filename.replace(" ", "_")
+        storage_path = f"{uid}/{uuid.uuid4().hex}_{safe_name}"
+
+        supabase.storage.from_(PRESCRIPTION_BUCKET).upload(
+            storage_path,
+            file_bytes,
+            {"content-type": file.content_type or "application/octet-stream"},
+        )
+        file_url = supabase.storage.from_(PRESCRIPTION_BUCKET).get_public_url(storage_path)
+
+        res = supabase.table("prescriptions").insert({
+            "patient_uid": uid,
+            "file_name": file.filename,
+            "file_url": file_url,
+            "storage_path": storage_path,
+            "uploaded_at": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+
+        return {"success": True, "prescription": res.data[0]}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+@app.get("/patient/{uid}/prescriptions")
+def get_prescriptions(uid: str):
+    res = supabase.table("prescriptions")\
+        .select("*")\
+        .eq("patient_uid", uid.upper())\
+        .order("uploaded_at", desc=True)\
+        .execute()
+    return res.data
+
+
+@app.delete("/patient/prescription/{prescription_id}")
+def delete_prescription(prescription_id: str):
+    row = supabase.table("prescriptions").select("storage_path").eq("id", prescription_id).execute()
+    if row.data:
+        storage_path = row.data[0].get("storage_path")
+        if storage_path:
+            try:
+                supabase.storage.from_(PRESCRIPTION_BUCKET).remove([storage_path])
+            except Exception:
+                pass
+    supabase.table("prescriptions").delete().eq("id", prescription_id).execute()
     return {"success": True}
