@@ -30,6 +30,40 @@ export default function PatientRegister({ onBack }) {
 
   const [loginForm, setLoginForm] = useState({ uid: "", password: "" });
 
+  const [rxFile, setRxFile] = useState(null);
+  const [rxUploading, setRxUploading] = useState(false);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [rxLoaded, setRxLoaded] = useState(false);
+
+  const fetchPrescriptions = async (uid) => {
+    try {
+      const res = await axios.get(`${API}/patient/${uid}/prescriptions`);
+      setPrescriptions(res.data || []);
+    } catch (e) {
+      // silently ignore — list stays empty
+    }
+    setRxLoaded(true);
+  };
+
+  const handleUploadPrescription = async () => {
+    if (!rxFile) { showMsg("Please choose a file first."); return; }
+    setRxUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", rxFile);
+      const res = await axios.post(`${API}/patient/${patient.uid}/prescription/upload`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (!res.data.success) { showMsg(res.data.message || "Upload failed."); setRxUploading(false); return; }
+      showMsg("Prescription uploaded successfully!", "success");
+      setRxFile(null);
+      fetchPrescriptions(patient.uid);
+    } catch (e) {
+      showMsg(e.response?.data?.message || "Upload failed. Please try again.");
+    }
+    setRxUploading(false);
+  };
+
   const showMsg = (text, type = "error") => {
     setMsg({ text, type });
     setTimeout(() => setMsg({ text: "", type: "" }), 4000);
@@ -355,6 +389,21 @@ export default function PatientRegister({ onBack }) {
             📋 Copy ID
           </button>
         </div>
+
+        {/* QR Code box */}
+        <div style={{ marginTop: 14, padding: "16px 20px", borderRadius: 14, background: "rgba(29,158,117,0.08)", border: "1px solid rgba(29,158,117,0.3)", textAlign: "center" }}>
+          <div style={{ color: "#8ba8c8", fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 10 }}>SCAN TO VIEW MY DETAILS</div>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(`${window.location.origin}/patient/view/${patient.uid}`)}`}
+            alt="Patient QR Code"
+            width={160}
+            height={160}
+            style={{ borderRadius: 10, background: "#fff", padding: 8 }}
+          />
+          <div style={{ color: "#6ee7b7", fontSize: 11, marginTop: 8 }}>
+            Anyone who scans this can instantly see your health record — handy for hospital staff in an emergency.
+          </div>
+        </div>
       </div>
 
       <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 20 }} />
@@ -413,7 +462,7 @@ export default function PatientRegister({ onBack }) {
     </div>
 
     <div
-      onClick={() => setStep("uploadPrescription")}
+      onClick={() => { setStep("uploadPrescription"); fetchPrescriptions(patient.uid); }}
       style={{
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.08)",
@@ -515,7 +564,7 @@ export default function PatientRegister({ onBack }) {
   );
   
   // ── PROFILE PAGE ──
-if (step === "profile" && patient) return wrap(
+if (step === "profile" && patient) { if (!rxLoaded) fetchPrescriptions(patient.uid); return wrap(
   <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
 
   <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -587,9 +636,20 @@ if (step === "profile" && patient) return wrap(
       📄 Prescription History
     </h3>
 
-    <p style={{ color: "#8ba8c8" }}>
-      No prescriptions uploaded yet
-    </p>
+    {prescriptions.length === 0 ? (
+      <p style={{ color: "#8ba8c8" }}>
+        No prescriptions uploaded yet
+      </p>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "10px 0" }}>
+        {prescriptions.map((p) => (
+          <a key={p.id} href={p.file_url} target="_blank" rel="noreferrer"
+            style={{ color: "#93c5fd", fontSize: 13, textDecoration: "none" }}>
+            📄 {p.file_name}
+          </a>
+        ))}
+      </div>
+    )}
 
     <hr style={{ margin: "20px 0", opacity: 0.2 }} />
 
@@ -610,7 +670,7 @@ if (step === "profile" && patient) return wrap(
   </button>
 
    </div>
-  ); 
+  ); } 
 
   // ── UPLOAD PRESCRIPTION PAGE ──
 if (step === "uploadPrescription" && patient) return wrap(
@@ -636,6 +696,8 @@ if (step === "uploadPrescription" && patient) return wrap(
 
       <input
         type="file"
+        accept="image/*,.pdf"
+        onChange={(e) => setRxFile(e.target.files?.[0] || null)}
         style={{
           width: "100%",
           marginTop: 15,
@@ -643,14 +705,19 @@ if (step === "uploadPrescription" && patient) return wrap(
         }}
       />
 
+      <MsgBox />
+
       <button
+        onClick={handleUploadPrescription}
+        disabled={rxUploading}
         style={{
           ...primaryBtn,
           marginTop: 20,
           width: "100%",
+          cursor: rxUploading ? "not-allowed" : "pointer",
         }}
       >
-        Upload File
+        {rxUploading ? <><Loader2 size={16} className="spin" style={{ animation: "spin 1s linear infinite" }} /> Uploading...</> : "Upload File"}
       </button>
     </div>
 
@@ -667,9 +734,33 @@ if (step === "uploadPrescription" && patient) return wrap(
         Uploaded Files
       </h3>
 
-      <p style={{ color: "#8ba8c8" }}>
-        No files uploaded yet
-      </p>
+      {!rxLoaded ? (
+        <p style={{ color: "#8ba8c8" }}>Loading...</p>
+      ) : prescriptions.length === 0 ? (
+        <p style={{ color: "#8ba8c8" }}>No files uploaded yet</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+          {prescriptions.map((p) => (
+            <a
+              key={p.id}
+              href={p.file_url}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "10px 14px", borderRadius: 10,
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                color: "#93c5fd", fontSize: 13, textDecoration: "none",
+              }}
+            >
+              <span>📄 {p.file_name}</span>
+              <span style={{ color: "#8ba8c8", fontSize: 11 }}>
+                {p.uploaded_at ? new Date(p.uploaded_at).toLocaleDateString() : ""}
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
 
     <button
