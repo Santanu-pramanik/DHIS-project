@@ -183,7 +183,7 @@ Format:
 
     try:
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-flash-latest",
             system_instruction=system_prompt,
         )
         result = model.generate_content(f"Patient symptoms: {symptoms}")
@@ -229,7 +229,7 @@ Always suggest consulting real doctors for medical advice."""
 
     try:
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-flash-latest",
             system_instruction=system_prompt,
         )
         result = model.generate_content(question)
