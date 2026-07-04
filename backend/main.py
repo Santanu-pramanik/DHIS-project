@@ -509,3 +509,147 @@ def delete_prescription(prescription_id: str):
                 pass
     supabase.table("prescriptions").delete().eq("id", prescription_id).execute()
     return {"success": True}
+
+
+# ── Hospital Login ───────────────────────────────────────────────
+@app.post("/hospital/login")
+def hospital_login(data: dict):
+    username = str(data.get("username", "")).strip()
+    password = str(data.get("password", "")).strip()
+    if not username or not password:
+        return {"success": False, "message": "Username and password are required."}
+
+    res = supabase.table("hospitals")\
+        .select("*")\
+        .eq("login_username", username)\
+        .execute()
+
+    if not res.data or res.data[0].get("login_password") != _hash_password(password):
+        return {"success": False, "message": "Invalid username or password."}
+
+    hospital = res.data[0]
+    hospital.pop("login_password", None)
+    return {"success": True, "hospital": hospital}
+
+
+# ── Appointment Routes ───────────────────────────────────────────
+import random
+import string
+
+def _generate_appointment_code():
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+@app.post("/appointment/book")
+def book_appointment(data: dict):
+    patient_uid = str(data.get("patient_uid", "")).upper().strip()
+    hospital_id = data.get("hospital_id")
+    district_id = data.get("district_id")
+    department = data.get("department")
+    doctor_name = data.get("doctor_name")
+    appointment_date = data.get("appointment_date")
+    appointment_time = data.get("appointment_time")
+
+    if not all([patient_uid, hospital_id, district_id, department, doctor_name, appointment_date, appointment_time]):
+        return {"success": False, "message": "All fields are required."}
+
+    pat = supabase.table("patients").select("id").eq("uid", patient_uid).execute()
+    if not pat.data:
+        return {"success": False, "message": "Patient not found."}
+
+    code = _generate_appointment_code()
+    for _ in range(5):
+        existing = supabase.table("appointments").select("id").eq("appointment_code", code).execute()
+        if not existing.data:
+            break
+        code = _generate_appointment_code()
+
+    res = supabase.table("appointments").insert({
+        "appointment_code": code,
+        "patient_uid": patient_uid,
+        "district_id": district_id,
+        "hospital_id": hospital_id,
+        "department": department,
+        "doctor_name": doctor_name,
+        "appointment_date": appointment_date,
+        "appointment_time": appointment_time,
+        "status": "Pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }).execute()
+
+    return {"success": True, "appointment": res.data[0]}
+
+
+@app.get("/patient/{uid}/appointments")
+def get_patient_appointments(uid: str):
+    res = supabase.table("appointments")\
+        .select("*, hospitals(hospital_name, address)")\
+        .eq("patient_uid", uid.upper())\
+        .order("created_at", desc=True)\
+        .execute()
+    return res.data
+
+
+@app.post("/appointment/{appointment_id}/cancel")
+def cancel_appointment(appointment_id: str):
+    supabase.table("appointments").update({"status": "Cancelled"}).eq("id", appointment_id).execute()
+    return {"success": True}
+
+
+@app.get("/appointment/verify/{code}")
+def verify_appointment(code: str, hospital_id: int):
+    code = code.upper().strip()
+    apt_res = supabase.table("appointments").select("*").eq("appointment_code", code).execute()
+    if not apt_res.data:
+        return {"success": False, "message": "Invalid appointment code."}
+
+    appointment = apt_res.data[0]
+    if appointment["hospital_id"] != hospital_id:
+        return {"success": False, "message": "This code was not booked at your hospital."}
+
+    if appointment["status"] == "Cancelled":
+        return {"success": False, "message": "This appointment has been cancelled by the patient."}
+
+    pat_res = supabase.table("patients").select("*").eq("uid", appointment["patient_uid"]).execute()
+    if not pat_res.data:
+        return {"success": False, "message": "Patient record not found."}
+    patient = pat_res.data[0]
+    patient.pop("password", None)
+
+    hosp_res = supabase.table("hospitals").select("hospital_name, address").eq("id", hospital_id).execute()
+    hospital = hosp_res.data[0] if hosp_res.data else {}
+
+    return {"success": True, "appointment": appointment, "patient": patient, "hospital": hospital}
+
+
+@app.post("/appointment/{code}/complete")
+def complete_appointment(code: str, data: dict):
+    code = code.upper().strip()
+    hospital_id = data.get("hospital_id")
+    doctor_name = str(data.get("doctor_name", "")).strip()
+
+    if not doctor_name:
+        return {"success": False, "message": "Doctor name is required."}
+
+    apt_res = supabase.table("appointments").select("*").eq("appointment_code", code).execute()
+    if not apt_res.data:
+        return {"success": False, "message": "Invalid appointment code."}
+
+    appointment = apt_res.data[0]
+    if appointment["hospital_id"] != hospital_id:
+        return {"success": False, "message": "This code was not booked at your hospital."}
+
+    now = datetime.now(timezone.utc).isoformat()
+    upd = supabase.table("appointments").update({
+        "status": "Completed",
+        "verified_doctor_name": doctor_name,
+        "verified_at": now,
+    }).eq("id", appointment["id"]).execute()
+
+    pat_res = supabase.table("patients").select("*").eq("uid", appointment["patient_uid"]).execute()
+    patient = pat_res.data[0] if pat_res.data else {}
+    patient.pop("password", None)
+
+    hosp_res = supabase.table("hospitals").select("hospital_name, address").eq("id", hospital_id).execute()
+    hospital = hosp_res.data[0] if hosp_res.data else {}
+
+    return {"success": True, "appointment": upd.data[0], "patient": patient, "hospital": hospital}
