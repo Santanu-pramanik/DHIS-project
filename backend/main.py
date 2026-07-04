@@ -4,7 +4,7 @@ from supabase import create_client
 import pandas as pd
 import os
 from dotenv import load_dotenv
-import anthropic
+import google.generativeai as genai
 import hashlib
 import httpx
 import uuid
@@ -24,6 +24,7 @@ app.add_middleware(
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # ── SMS Helper ───────────────────────────────────────────────
 async def send_sms(mobile: str, otp_or_id: str) -> bool:
@@ -166,11 +167,7 @@ async def symptom_check(data: dict):
     top_diseases = df.groupby("disease_type")["case_count"].sum().sort_values(ascending=False).head(5).to_dict() if not df.empty else {}
     hospital_list = [h["hospital_name"] for h in hospitals]
 
-    client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=500,
-        system=f"""You are a medical assistant for DHIS - District Health Intelligence System in West Bengal, India.
+    system_prompt = f"""You are a medical assistant for DHIS - District Health Intelligence System in West Bengal, India.
 Current district: {district}
 Top diseases in this district: {top_diseases}
 Available hospitals: {', '.join(hospital_list)}
@@ -182,10 +179,17 @@ Format:
 - Possible conditions: ...
 - Recommended hospital: ...
 - Precautions: ...
-- ⚠️ Please consult a doctor immediately.""",
-        messages=[{"role": "user", "content": f"Patient symptoms: {symptoms}"}]
-    )
-    return {"response": message.content[0].text}
+- ⚠️ Please consult a doctor immediately."""
+
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.0-flash",
+            system_instruction=system_prompt,
+        )
+        result = model.generate_content(f"Patient symptoms: {symptoms}")
+        return {"response": result.text}
+    except Exception as e:
+        return {"response": f"Sorry, the AI assistant is temporarily unavailable. ({e})"}
 
 @app.post("/ai/chat")
 async def ai_chat(data: dict):
@@ -210,11 +214,7 @@ async def ai_chat(data: dict):
     available_doctors = sum(h["available_doctors"] for h in hospitals)
     hospital_names = [h["hospital_name"] for h in hospitals]
 
-    client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=400,
-        system=f"""You are DHIS AI Assistant for West Bengal District Health Intelligence System.
+    system_prompt = f"""You are DHIS AI Assistant for West Bengal District Health Intelligence System.
 Current district: {district_name}
 Real-time health data:
 - Total cases: {total_cases}
@@ -225,10 +225,17 @@ Real-time health data:
 - Hospitals: {', '.join(hospital_names)}
 
 Answer health questions based on this real data. Be concise and helpful.
-Always suggest consulting real doctors for medical advice.""",
-        messages=[{"role": "user", "content": question}]
-    )
-    return {"response": message.content[0].text}
+Always suggest consulting real doctors for medical advice."""
+
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.0-flash",
+            system_instruction=system_prompt,
+        )
+        result = model.generate_content(question)
+        return {"response": result.text}
+    except Exception as e:
+        return {"response": f"Sorry, the AI assistant is temporarily unavailable. ({e})"}
 
 # ── Doctor Routes ─────────────────────────────────────────────
 @app.post("/doctor/login")
