@@ -5,6 +5,8 @@ import HospitalPage from "./HospitalPage"
 import AIAssistant from "./AIAssistant"
 import DoctorLogin from "./DoctorLogin"
 import DoctorDashboard from "./DoctorDashboard"
+import HospitalLogin from "./HospitalLogin"
+import HospitalDashboard from "./HospitalDashboard"
 import westBengalImg from "./assets/west_bengal_img.png"
 import PatientRegister from "./PatientRegister"
 import {
@@ -50,6 +52,8 @@ export default function App() {
   const [adminLoggedIn, setAdminLoggedIn] = useState(false)
   const [doctorLoggedIn, setDoctorLoggedIn] = useState(false)
   const [loggedDoctor, setLoggedDoctor] = useState(null)
+  const [hospitalLoggedIn, setHospitalLoggedIn] = useState(false)
+  const [loggedHospital, setLoggedHospital] = useState(null)
   const [pwInput, setPwInput] = useState("")
   const [pwError, setPwError] = useState("")
   const [existingDiseases, setExistingDiseases] = useState([])
@@ -555,6 +559,7 @@ if (currentPage === "landing") {
   return <LandingPage onNavigate={(p) => {
     if (p === "patient") setShowPatientReg(true)
     else if (p === "doctor") setCurrentPage("doctor")
+    else if (p === "hospital") setCurrentPage("hospital")
     else { setCurrentPage("app"); setPage(p) }
   }} />
 }
@@ -571,6 +576,21 @@ if (currentPage === "doctor") {
   return <DoctorDashboard
     doctor={loggedDoctor}
     onLogout={() => { setDoctorLoggedIn(false); setLoggedDoctor(null); setCurrentPage("landing") }}
+  />
+}
+if (currentPage === "hospital") {
+  if (!hospitalLoggedIn) {
+    return <HospitalLogin
+      onLoginSuccess={(hospital) => {
+        setLoggedHospital(hospital)
+        setHospitalLoggedIn(true)
+      }}
+      onBack={() => setCurrentPage("landing")}
+    />
+  }
+  return <HospitalDashboard
+    hospital={loggedHospital}
+    onLogout={() => { setHospitalLoggedIn(false); setLoggedHospital(null); setCurrentPage("landing") }}
   />
 }
   return (

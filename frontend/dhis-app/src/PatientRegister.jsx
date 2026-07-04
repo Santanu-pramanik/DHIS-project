@@ -5,10 +5,11 @@ import { ArrowLeft, Phone, User, CheckCircle2, AlertCircle, ArrowRight, Loader2,
 const API = "https://dhis-backend.onrender.com";
 
 const DISTRICTS = [
-  "Darjeeling","Alipurduar","Cooch Behar","Jalpaiguri","Malda",
-  "Murshidabad","Birbhum","Bardhaman","Nadia","Purulia","Bankura",
-  "Hooghly","North 24 Parganas","Kolkata","Howrah",
-  "West Midnapore","East Midnapore","South 24 Parganas"
+  "Kolkata","Howrah","East Midnapore","West Midnapore","Bardhaman",
+  "Murshidabad","Malda","Darjeeling","Nadia","Hooghly",
+  "North 24 Parganas","South 24 Parganas","Bankura","Purulia",
+  "Jalpaiguri","Cooch Behar","Alipurduar","Birbhum",
+  "Uttar Dinajpur","Dakshin Dinajpur","Kalimpong"
 ];
 
 const BLOOD_GROUPS = ["A+","A-","B+","B-","AB+","AB-","O+","O-"];
@@ -34,6 +35,88 @@ export default function PatientRegister({ onBack }) {
   const [rxUploading, setRxUploading] = useState(false);
   const [prescriptions, setPrescriptions] = useState([]);
   const [rxLoaded, setRxLoaded] = useState(false);
+
+  // ── Appointment booking state ──
+  const [apptDistricts, setApptDistricts] = useState([]);
+  const [apptHospitals, setApptHospitals] = useState([]);
+  const [apptDepartments, setApptDepartments] = useState([]);
+  const [apptDoctors, setApptDoctors] = useState([]);
+  const [apptForm, setApptForm] = useState({
+    district_id: "", hospital_id: "", department: "", doctor_name: "",
+    appointment_date: "", appointment_time: "",
+  });
+  const [apptSubmitting, setApptSubmitting] = useState(false);
+  const [apptSuccess, setApptSuccess] = useState(null); // booked appointment w/ code
+  const [apptsLoading, setApptsLoading] = useState(false);
+  const [apptsLoaded, setApptsLoaded] = useState(false);
+  const [apptError, setApptError] = useState("");
+
+  const loadApptDistricts = async () => {
+    try {
+      const res = await axios.get(`${API}/districts`);
+      setApptDistricts(res.data || []);
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleApptDistrictChange = async (district_id) => {
+    setApptForm(f => ({ ...f, district_id, hospital_id: "", department: "", doctor_name: "" }));
+    setApptHospitals([]); setApptDepartments([]); setApptDoctors([]);
+    if (!district_id) return;
+    try {
+      const res = await axios.get(`${API}/hospitals/${district_id}`);
+      setApptHospitals(res.data || []);
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleApptHospitalChange = async (hospital_id) => {
+    setApptForm(f => ({ ...f, hospital_id, department: "", doctor_name: "" }));
+    setApptDepartments([]); setApptDoctors([]);
+    if (!hospital_id) return;
+    try {
+      const res = await axios.get(`${API}/hospital/${hospital_id}/details`);
+      setApptDepartments(res.data.departments || []);
+      setApptDoctors(res.data.doctors || []);
+    } catch (e) { /* ignore */ }
+  };
+
+  const handleBookAppointment = async () => {
+    setApptError("");
+    const { district_id, hospital_id, department, doctor_name, appointment_date, appointment_time } = apptForm;
+    if (!district_id || !hospital_id || !department || !doctor_name || !appointment_date || !appointment_time) {
+      setApptError("Please fill in all fields."); return;
+    }
+    setApptSubmitting(true);
+    try {
+      const res = await axios.post(`${API}/appointment/book`, {
+        patient_uid: patient.uid,
+        district_id: Number(district_id),
+        hospital_id: Number(hospital_id),
+        department, doctor_name, appointment_date, appointment_time,
+      });
+      if (!res.data.success) { setApptError(res.data.message || "Booking failed."); setApptSubmitting(false); return; }
+      setApptSuccess(res.data.appointment);
+    } catch (e) {
+      setApptError(e.response?.data?.message || "Booking failed. Please try again.");
+    }
+    setApptSubmitting(false);
+  };
+
+  const fetchAppointments = async (uid) => {
+    setApptsLoading(true);
+    try {
+      const res = await axios.get(`${API}/patient/${uid}/appointments`);
+      setAppointments(res.data || []);
+    } catch (e) { /* ignore */ }
+    setApptsLoading(false);
+    setApptsLoaded(true);
+  };
+
+  const handleCancelAppointment = async (id, uid) => {
+    try {
+      await axios.post(`${API}/appointment/${id}/cancel`);
+      fetchAppointments(uid);
+    } catch (e) { /* ignore */ }
+  };
 
   const fetchPrescriptions = async (uid) => {
     try {
@@ -492,7 +575,12 @@ export default function PatientRegister({ onBack }) {
     </div>
 
     <div
-      onClick={() => setStep("appointment")}
+      onClick={() => {
+        setApptSuccess(null); setApptError("");
+        setApptForm({ district_id: "", hospital_id: "", department: "", doctor_name: "", appointment_date: "", appointment_time: "" });
+        loadApptDistricts();
+        setStep("appointment");
+      }}
       style={{
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.08)",
@@ -522,7 +610,7 @@ export default function PatientRegister({ onBack }) {
     </div>
 
     <div
-      onClick={() => setStep("myAppointment")}
+      onClick={() => { setStep("myAppointment"); fetchAppointments(patient.uid); }}
       style={{
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.08)",
@@ -564,7 +652,7 @@ export default function PatientRegister({ onBack }) {
   );
   
   // ── PROFILE PAGE ──
-if (step === "profile" && patient) { if (!rxLoaded) fetchPrescriptions(patient.uid); return wrap(
+if (step === "profile" && patient) { if (!rxLoaded) fetchPrescriptions(patient.uid); if (!apptsLoaded) fetchAppointments(patient.uid); return wrap(
   <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
 
   <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -657,9 +745,19 @@ if (step === "profile" && patient) { if (!rxLoaded) fetchPrescriptions(patient.u
       📅 Appointment History
     </h3>
 
-    <p style={{ color: "#8ba8c8" }}>
-      No appointments booked yet
-    </p>
+    {appointments.length === 0 ? (
+      <p style={{ color: "#8ba8c8" }}>
+        No appointments booked yet
+      </p>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "10px 0" }}>
+        {appointments.map((app) => (
+          <div key={app.id} style={{ fontSize: 13, color: "#8ba8c8" }}>
+            <span style={{ color: "#fff" }}>{app.doctor_name}</span> — {app.hospitals?.hospital_name} · {app.appointment_date} · <span style={{ color: app.status === "Completed" ? "#6ee7b7" : app.status === "Cancelled" ? "#fca5a5" : "#fbbf24" }}>{app.status}</span>
+          </div>
+        ))}
+      </div>
+    )}
 
   <button
     onClick={() => setStep("dashboard")}
@@ -775,7 +873,36 @@ if (step === "uploadPrescription" && patient) return wrap(
 );
 
 // ── BOOK APPOINTMENT PAGE ──
-if (step === "appointment" && patient) return wrap(
+if (step === "appointment" && patient) {
+
+  if (apptSuccess) return wrap(
+    <div style={{ ...cardStyle, maxWidth: 500, zIndex: 1, textAlign: "center" }}>
+      <CheckCircle2 size={48} color="#1D9E75" style={{ marginBottom: 10 }} />
+      <h2 style={{ color: "#1D9E75" }}>Appointment Booked!</h2>
+      <p style={{ color: "#8ba8c8", marginTop: 8 }}>
+        Show this code at the hospital reception to check in.
+      </p>
+      <div style={{
+        marginTop: 20, padding: "20px 10px", borderRadius: 14,
+        background: "rgba(29,158,117,0.1)", border: "1px solid rgba(29,158,117,0.4)",
+        fontSize: 32, fontWeight: 800, letterSpacing: 4, color: "#6ee7b7",
+      }}>
+        {apptSuccess.appointment_code}
+      </div>
+      <div style={{ color: "#8ba8c8", fontSize: 13, marginTop: 14, textAlign: "left" }}>
+        <div>📅 {apptSuccess.appointment_date} at {apptSuccess.appointment_time}</div>
+        <div>🩺 {apptSuccess.department} — {apptSuccess.doctor_name}</div>
+      </div>
+      <button
+        onClick={() => { setStep("dashboard"); setApptSuccess(null); }}
+        style={{ ...primaryBtn, marginTop: 24, width: "100%" }}
+      >
+        Back to Dashboard
+      </button>
+    </div>
+  );
+
+  return wrap(
   <div style={{ ...cardStyle, maxWidth: 650, zIndex: 1 }}>
 
     <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -796,32 +923,52 @@ if (step === "appointment" && patient) return wrap(
       <label style={{ color: "#8ba8c8"}}>
         Select District
       </label>
-      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
-        <option>Hooghly</option>
+      <select
+        value={apptForm.district_id}
+        onChange={e => handleApptDistrictChange(e.target.value)}
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
+      >
+        <option value="">-- Select District --</option>
+        {apptDistricts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
       </select>
 
       <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
         Select Hospital
       </label>
-      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
-        <option>Chinsurah District Hospital</option>
+      <select
+        value={apptForm.hospital_id}
+        onChange={e => handleApptHospitalChange(e.target.value)}
+        disabled={!apptForm.district_id}
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
+      >
+        <option value="">-- Select Hospital --</option>
+        {apptHospitals.map(h => <option key={h.id} value={h.id}>{h.hospital_name}</option>)}
       </select>
 
       <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
         Department
       </label>
-      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%"   }}>
-        <option>General Medicine</option>
-        <option>Cardiology</option>
-        <option>Neurology</option>
-        <option>Orthopedics</option>
+      <select
+        value={apptForm.department}
+        onChange={e => setApptForm(f => ({ ...f, department: e.target.value }))}
+        disabled={!apptForm.hospital_id}
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%"   }}
+      >
+        <option value="">-- Select Department --</option>
+        {apptDepartments.map(d => <option key={d.id} value={d.department_name}>{d.department_name}</option>)}
       </select>
 
       <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
         Doctor
       </label>
-      <select style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}>
-        <option>Dr. Amit Roy</option>
+      <select
+        value={apptForm.doctor_name}
+        onChange={e => setApptForm(f => ({ ...f, doctor_name: e.target.value }))}
+        disabled={!apptForm.hospital_id}
+        style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
+      >
+        <option value="">-- Select Doctor --</option>
+        {apptDoctors.map(d => <option key={d.id} value={d.name}>{d.name} ({d.specialization})</option>)}
       </select>
 
       <label style={{ color: "#8ba8c8", marginTop: 15, display: "block" }}>
@@ -829,6 +976,8 @@ if (step === "appointment" && patient) return wrap(
       </label>
       <input
         type="date"
+        value={apptForm.appointment_date}
+        onChange={e => setApptForm(f => ({ ...f, appointment_date: e.target.value }))}
         style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
       />
 
@@ -837,19 +986,34 @@ if (step === "appointment" && patient) return wrap(
       </label>
       <input
         type="time"
+        value={apptForm.appointment_time}
+        onChange={e => setApptForm(f => ({ ...f, appointment_time: e.target.value }))}
         style={{ ...inputStyle, marginTop: 8, padding: "6px 10px", height : "50px", width: "90%" }}
       />
 
+      {apptError && (
+        <div style={{
+          marginTop: 15, padding: "10px 14px", borderRadius: 8,
+          background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+          color: "#fca5a5", fontSize: 13,
+        }}>
+          {apptError}
+        </div>
+      )}
+
       <button
+        onClick={handleBookAppointment}
+        disabled={apptSubmitting}
         style={{
           ...primaryBtn,
           marginTop: 30,
           padding: "6px 10px", 
           height : "50px",
           width: "100%",
+          cursor: apptSubmitting ? "not-allowed" : "pointer",
         }}
       >
-        Confirm Appointment
+        {apptSubmitting ? "Booking..." : "Confirm Appointment"}
       </button>
 
     </div>
@@ -863,7 +1027,8 @@ if (step === "appointment" && patient) return wrap(
     </button>
 
   </div>
-);
+  );
+}
 
 //Appointment list page
 
@@ -898,7 +1063,9 @@ if (step === "myAppointment" && patient) return wrap(
     </div>
 
     {/* EMPTY STATE */}
-    {(!appointments || appointments.length === 0) && (
+    {apptsLoading ? (
+      <div style={{ textAlign: "center", padding: 20, color: "#8ba8c8" }}>Loading...</div>
+    ) : (!appointments || appointments.length === 0) && (
       <div
         style={{
           textAlign: "center",
@@ -916,9 +1083,9 @@ if (step === "myAppointment" && patient) return wrap(
     {/* APPOINTMENT LIST */}
     <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 15 }}>
 
-      {appointments?.map((app, index) => (
+      {appointments?.map((app) => (
         <div
-          key={index}
+          key={app.id}
           style={{
             background: "rgba(255,255,255,0.04)",
             border: "1px solid rgba(255,255,255,0.08)",
@@ -933,18 +1100,21 @@ if (step === "myAppointment" && patient) return wrap(
           {/* LEFT */}
           <div>
             <div style={{ color: "#fff", fontWeight: 700 }}>
-              {app.doctor_name}
+              {app.doctor_name} <span style={{ color: "#8ba8c8", fontWeight: 400 }}>({app.department})</span>
             </div>
             <div style={{ color: "#8ba8c8", fontSize: 13 }}>
-              {app.hospital}
+              {app.hospitals?.hospital_name}
             </div>
             <div style={{ color: "#8ba8c8", fontSize: 12 }}>
-              📅 {app.appointment_date}
+              📅 {app.appointment_date} · ⏰ {app.appointment_time}
+            </div>
+            <div style={{ color: "#6ee7b7", fontSize: 13, marginTop: 4, fontWeight: 700, letterSpacing: 1 }}>
+              Code: {app.appointment_code}
             </div>
           </div>
 
           {/* RIGHT */}
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
             <div
               style={{
                 padding: "5px 10px",
@@ -952,7 +1122,7 @@ if (step === "myAppointment" && patient) return wrap(
                 color: "#fff",
                 fontSize: 12,
                 background:
-                  app.status === "Approved"
+                  app.status === "Completed"
                     ? "green"
                     : app.status === "Cancelled"
                     ? "red"
@@ -961,6 +1131,18 @@ if (step === "myAppointment" && patient) return wrap(
             >
               {app.status}
             </div>
+            {app.status === "Pending" && (
+              <button
+                onClick={() => handleCancelAppointment(app.id, patient.uid)}
+                style={{
+                  background: "none", border: "1px solid rgba(239,68,68,0.4)",
+                  color: "#fca5a5", borderRadius: 6, fontSize: 11,
+                  padding: "4px 8px", cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            )}
           </div>
 
         </div>
