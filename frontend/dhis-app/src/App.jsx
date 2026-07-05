@@ -9,6 +9,8 @@ import HospitalLogin from "./HospitalLogin"
 import HospitalDashboard from "./HospitalDashboard"
 import westBengalImg from "./assets/west_bengal_img.png"
 import PatientRegister from "./PatientRegister"
+import AdminManage from "./AdminManage"
+import AdminChangePassword from "./AdminChangePassword"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -23,7 +25,6 @@ const API = "https://dhis-backend.onrender.com"
 const COLORS = ["#378ADD","#1D9E75","#EF9F27","#D85A30","#7F77DD","#993556","#639922","#BA7517","#D4537E","#0F6E56","#E24B4A","#533AB7"]
 const MAX_YEAR = 2026
 const SESSION_KEY = "dhis_admin_session"
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "dhis2026"
 
 const WB_PATH = "M290,58 L295,62 L300,68 L298,75 L302,80 L305,87 L302,93 L298,98 L300,105 L297,112 L293,118 L290,125 L292,132 L289,139 L285,145 L282,152 L278,158 L274,164 L270,170 L266,176 L261,181 L256,186 L250,190 L244,194 L238,198 L232,202 L226,205 L220,207 L214,208 L208,207 L202,205 L197,201 L192,197 L188,192 L184,186 L181,180 L179,174 L177,168 L176,162 L175,156 L175,150 L176,144 L177,138 L179,132 L181,126 L184,121 L187,115 L191,110 L195,105 L200,101 L205,97 L210,93 L215,89 L220,85 L225,81 L230,77 L235,73 L240,69 L245,65 L250,61 L255,58 L260,55 L265,53 L270,52 L275,52 L280,54 L285,56 Z"
 
@@ -50,6 +51,7 @@ export default function App() {
   const [analysis, setAnalysis] = useState(null)
   const [loading, setLoading] = useState(false)
   const [adminLoggedIn, setAdminLoggedIn] = useState(false)
+  const [adminTab, setAdminTab] = useState("cases")
   const [doctorLoggedIn, setDoctorLoggedIn] = useState(false)
   const [loggedDoctor, setLoggedDoctor] = useState(null)
   const [hospitalLoggedIn, setHospitalLoggedIn] = useState(false)
@@ -92,13 +94,18 @@ export default function App() {
       })
   }, [selectedDistrict])
 
-  const handleLogin = () => {
-    if (pwInput === ADMIN_PASSWORD) {
-      setAdminLoggedIn(true)
-      sessionStorage.setItem(SESSION_KEY, "true")
-      setPwError("")
-    } else {
-      setPwError("Wrong password! Please try again.")
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post(`${API}/admin/login`, { password: pwInput })
+      if (res.data.success) {
+        setAdminLoggedIn(true)
+        sessionStorage.setItem(SESSION_KEY, "true")
+        setPwError("")
+      } else {
+        setPwError(res.data.message || "Wrong password! Please try again.")
+      }
+    } catch {
+      setPwError("Could not reach the server. Please try again.")
     }
   }
 
@@ -377,6 +384,28 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #rgba(255,255,2
         </button>
       </div>
 
+      <div style={{ display:"flex", gap:8, marginBottom:24, flexWrap:"wrap" }}>
+        {[
+          ["cases", "Disease Cases"],
+          ["manage", "Hospitals / Doctors / Districts / Patients"],
+          ["settings", "Change Password"],
+        ].map(([key, label]) => (
+          <button key={key} onClick={() => setAdminTab(key)}
+            style={{
+              padding:"8px 16px", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer",
+              border: adminTab === key ? "1px solid #378ADD" : "1px solid rgba(255,255,255,0.15)",
+              background: adminTab === key ? "rgba(55,138,221,0.2)" : "transparent",
+              color: adminTab === key ? "#93c5fd" : "#8ba8c8",
+            }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {adminTab === "manage" && <AdminManage API={API} />}
+      {adminTab === "settings" && <AdminChangePassword API={API} />}
+
+      {adminTab === "cases" && (<>
       {districtBar}
 
       <div style={{ background:"rgba(255,255,255,0.02)",borderRadius:16,padding:"28px 32px",boxShadow:"0 8px 25px rgba(0,0,0,0.15)",
@@ -550,6 +579,7 @@ style={{ padding:"8px 16px", borderRadius:8, border:"1.5px solid #rgba(255,255,2
           </table>
         </div>
       </div>
+      </>)}
     </div>
   )
 

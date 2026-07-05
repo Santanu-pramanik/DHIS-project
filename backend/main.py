@@ -660,3 +660,227 @@ def complete_appointment(code: str, data: dict):
     hospital = hosp_res.data[0] if hosp_res.data else {}
 
     return {"success": True, "appointment": upd.data[0], "patient": patient, "hospital": hospital}
+
+
+# ── Admin: Password ────────────────────────────────────────────
+def _get_admin_row():
+    row = supabase.table("admin_settings").select("*").eq("id", 1).execute()
+    if not row.data:
+        default_pw = os.getenv("ADMIN_PASSWORD_DEFAULT", "dhis2025")
+        supabase.table("admin_settings").insert({
+            "id": 1, "password_hash": _hash_password(default_pw)
+        }).execute()
+        row = supabase.table("admin_settings").select("*").eq("id", 1).execute()
+    return row.data[0]
+
+@app.post("/admin/login")
+def admin_login(data: dict):
+    password = str(data.get("password", "")).strip()
+    admin = _get_admin_row()
+    if admin["password_hash"] != _hash_password(password):
+        return {"success": False, "message": "Invalid password."}
+    return {"success": True}
+
+@app.post("/admin/change-password")
+def admin_change_password(data: dict):
+    old_password = str(data.get("old_password", "")).strip()
+    new_password = str(data.get("new_password", "")).strip()
+    if len(new_password) < 4:
+        return {"success": False, "message": "New password must be at least 4 characters."}
+    admin = _get_admin_row()
+    if admin["password_hash"] != _hash_password(old_password):
+        return {"success": False, "message": "Current password is incorrect."}
+    supabase.table("admin_settings").update({
+        "password_hash": _hash_password(new_password)
+    }).eq("id", 1).execute()
+    return {"success": True}
+
+
+# ── Admin: Districts ────────────────────────────────────────────
+@app.post("/admin/districts")
+def admin_add_district(data: dict):
+    res = supabase.table("districts").insert({
+        "name": data.get("name"),
+        "population": data.get("population") or None,
+        "latitude": data.get("latitude") or None,
+        "longitude": data.get("longitude") or None,
+    }).execute()
+    return {"success": True, "district": res.data[0]}
+
+@app.put("/admin/districts/{district_id}")
+def admin_update_district(district_id: int, data: dict):
+    supabase.table("districts").update({
+        "name": data.get("name"),
+        "population": data.get("population") or None,
+        "latitude": data.get("latitude") or None,
+        "longitude": data.get("longitude") or None,
+    }).eq("id", district_id).execute()
+    return {"success": True}
+
+@app.delete("/admin/districts/{district_id}")
+def admin_delete_district(district_id: int):
+    supabase.table("districts").delete().eq("id", district_id).execute()
+    return {"success": True}
+
+
+# ── Admin: Hospitals ────────────────────────────────────────────
+@app.get("/admin/hospitals")
+def admin_get_hospitals():
+    res = supabase.table("hospitals").select("*, districts(name)").order("hospital_name").execute()
+    return res.data
+
+@app.post("/admin/hospitals")
+def admin_add_hospital(data: dict):
+    res = supabase.table("hospitals").insert({
+        "hospital_name": data.get("hospital_name"),
+        "district_id": data.get("district_id"),
+        "address": data.get("address"),
+        "total_doctors": data.get("total_doctors") or 0,
+        "available_doctors": data.get("available_doctors") or 0,
+    }).execute()
+    return {"success": True, "hospital": res.data[0]}
+
+@app.put("/admin/hospitals/{hospital_id}")
+def admin_update_hospital(hospital_id: int, data: dict):
+    supabase.table("hospitals").update({
+        "hospital_name": data.get("hospital_name"),
+        "district_id": data.get("district_id"),
+        "address": data.get("address"),
+        "total_doctors": data.get("total_doctors") or 0,
+        "available_doctors": data.get("available_doctors") or 0,
+    }).eq("id", hospital_id).execute()
+    return {"success": True}
+
+@app.delete("/admin/hospitals/{hospital_id}")
+def admin_delete_hospital(hospital_id: int):
+    supabase.table("hospitals").delete().eq("id", hospital_id).execute()
+    return {"success": True}
+
+
+# ── Admin: Departments (per hospital, controls bed counts) ──────
+@app.post("/admin/departments")
+def admin_add_department(data: dict):
+    res = supabase.table("departments").insert({
+        "hospital_id": data.get("hospital_id"),
+        "department_name": data.get("department_name"),
+        "total_beds": data.get("total_beds") or 0,
+        "available_beds": data.get("available_beds") or 0,
+    }).execute()
+    return {"success": True, "department": res.data[0]}
+
+@app.put("/admin/departments/{department_id}")
+def admin_update_department(department_id: int, data: dict):
+    supabase.table("departments").update({
+        "department_name": data.get("department_name"),
+        "total_beds": data.get("total_beds") or 0,
+        "available_beds": data.get("available_beds") or 0,
+    }).eq("id", department_id).execute()
+    return {"success": True}
+
+@app.delete("/admin/departments/{department_id}")
+def admin_delete_department(department_id: int):
+    supabase.table("departments").delete().eq("id", department_id).execute()
+    return {"success": True}
+
+
+# ── Admin: Doctors ──────────────────────────────────────────────
+import re as _re
+import random as _random
+import string as _string
+
+def _slugify_hospital(name: str) -> str:
+    name = _re.sub(r"\bhospital\b", "", name or "", flags=_re.I).strip()
+    return _re.sub(r"[^A-Za-z0-9]", "", name) or "HOSP"
+
+def _slugify_doctor(name: str) -> str:
+    name = _re.sub(r"^dr\.?\s*", "", name or "", flags=_re.I).strip()
+    return _re.sub(r"[^A-Za-z0-9]", "", name) or "DOC"
+
+def _random_password(length: int = 8) -> str:
+    chars = _string.ascii_letters + _string.digits
+    return "".join(_random.choice(chars) for _ in range(length))
+
+@app.get("/admin/doctors")
+def admin_get_doctors():
+    res = supabase.table("doctors").select("*, hospitals(hospital_name)").order("name").execute()
+    return res.data
+
+@app.post("/admin/doctors")
+def admin_add_doctor(data: dict):
+    hospital_id = data.get("hospital_id")
+    name = data.get("name", "").strip()
+    hosp = supabase.table("hospitals").select("hospital_name").eq("id", hospital_id).execute()
+    hospital_name = hosp.data[0]["hospital_name"] if hosp.data else "Hospital"
+
+    base_id = f"{_slugify_hospital(hospital_name)}_{_slugify_doctor(name)}"
+    existing_ids = {d["unique_id"] for d in supabase.table("doctors").select("unique_id").execute().data if d.get("unique_id")}
+    unique_id = base_id
+    n = 2
+    while unique_id in existing_ids:
+        unique_id = f"{base_id}{n}"
+        n += 1
+
+    password = _random_password()
+
+    res = supabase.table("doctors").insert({
+        "name": name,
+        "specialization": data.get("specialization"),
+        "hospital_id": hospital_id,
+        "unique_id": unique_id,
+        "password": password,
+    }).execute()
+
+    doctor = res.data[0]
+    doctor["_plaintext_password"] = password  # shown once to admin, not stored elsewhere
+    return {"success": True, "doctor": doctor}
+
+@app.put("/admin/doctors/{doctor_id}")
+def admin_update_doctor(doctor_id: int, data: dict):
+    supabase.table("doctors").update({
+        "name": data.get("name"),
+        "specialization": data.get("specialization"),
+        "hospital_id": data.get("hospital_id"),
+    }).eq("id", doctor_id).execute()
+    return {"success": True}
+
+@app.post("/admin/doctors/{doctor_id}/reset-password")
+def admin_reset_doctor_password(doctor_id: int):
+    password = _random_password()
+    supabase.table("doctors").update({"password": password}).eq("id", doctor_id).execute()
+    return {"success": True, "password": password}
+
+@app.delete("/admin/doctors/{doctor_id}")
+def admin_delete_doctor(doctor_id: int):
+    supabase.table("doctors").delete().eq("id", doctor_id).execute()
+    return {"success": True}
+
+
+# ── Admin: Patients ─────────────────────────────────────────────
+@app.get("/admin/patients")
+def admin_get_patients():
+    res = supabase.table("patients")\
+        .select("id, uid, full_name, age, gender, blood_group, mobile, address, district_id, allergies, conditions, districts(name)")\
+        .order("full_name")\
+        .execute()
+    return res.data
+
+@app.put("/admin/patients/{uid}")
+def admin_update_patient(uid: str, data: dict):
+    update_data = {k: v for k, v in {
+        "full_name": data.get("full_name"),
+        "age": data.get("age"),
+        "gender": data.get("gender"),
+        "blood_group": data.get("blood_group"),
+        "mobile": data.get("mobile"),
+        "address": data.get("address"),
+        "district_id": data.get("district_id"),
+        "allergies": data.get("allergies"),
+        "conditions": data.get("conditions"),
+    }.items() if v is not None}
+    supabase.table("patients").update(update_data).eq("uid", uid.upper()).execute()
+    return {"success": True}
+
+@app.delete("/admin/patients/{uid}")
+def admin_delete_patient(uid: str):
+    supabase.table("patients").delete().eq("uid", uid.upper()).execute()
+    return {"success": True}
