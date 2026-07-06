@@ -25,7 +25,7 @@ export default function PatientRegister({ onBack }) {
 
   const [form, setForm] = useState({
     full_name: "", aadhar: "", age: "", gender: "Male",
-    district: "", blood_group: "O+", mobile: "", 
+    district: "", blood_group: "O+", mobile: "", email: "", 
     address: "", password: "", confirm_password: ""
   });
 
@@ -154,7 +154,9 @@ export default function PatientRegister({ onBack }) {
 
   const handleRegister = async () => {
     if (!form.full_name.trim()) { showMsg("Please enter your full name."); return; }
-    if (!form.mobile || !/^[6-9]\d{9}$/.test(form.mobile)) { showMsg("Enter a valid 10-digit mobile number."); return; }
+    if (!form.mobile && !form.email) { showMsg("Please provide a mobile number or an email address."); return; }
+    if (form.mobile && !/^[6-9]\d{9}$/.test(form.mobile)) { showMsg("Enter a valid 10-digit mobile number."); return; }
+    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) { showMsg("Enter a valid email address."); return; }
     if (!form.aadhar || form.aadhar.length !== 4) { showMsg("Enter last 4 digits of Aadhaar."); return; }
     if (!form.age || form.age < 1 || form.age > 120) { showMsg("Enter a valid age."); return; }
     if (!form.address.trim()) { showMsg("Please enter your address."); return; }
@@ -171,6 +173,7 @@ export default function PatientRegister({ onBack }) {
         gender: form.gender,
         blood_group: form.blood_group,
         mobile: form.mobile,
+        email: form.email,
         address: form.address,
         district_name: form.district,
         password: form.password,
@@ -370,12 +373,20 @@ export default function PatientRegister({ onBack }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
-            <label style={labelStyle}>MOBILE NUMBER *</label>
+            <label style={labelStyle}>MOBILE NUMBER</label>
             <input value={form.mobile} onChange={e => setForm({ ...form, mobile: e.target.value.replace(/\D/g, "").slice(0, 10) })} placeholder="9876543210" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>AADHAAR LAST 4 *</label>
             <input value={form.aadhar} onChange={e => setForm({ ...form, aadhar: e.target.value.replace(/\D/g, "").slice(0, 4) })} placeholder="e.g. 3456" style={inputStyle} />
+          </div>
+        </div>
+
+        <div>
+          <label style={labelStyle}>EMAIL {!form.mobile && "*"}</label>
+          <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" style={inputStyle} />
+          <div style={{ color: "#8ba8c8", fontSize: 11, marginTop: 4 }}>
+            Give at least one — mobile or email — so we can send your Patient ID.
           </div>
         </div>
 
