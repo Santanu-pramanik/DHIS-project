@@ -154,7 +154,7 @@ export default function PatientRegister({ onBack }) {
 
   const handleRegister = async () => {
     if (!form.full_name.trim()) { showMsg("Please enter your full name."); return; }
-    if (!form.mobile && !form.email) { showMsg("Please provide a mobile number or an email address."); return; }
+    if (!form.email) { showMsg("Please provide an email address — it's how we'll send your Patient ID."); return; }
     if (form.mobile && !/^[6-9]\d{9}$/.test(form.mobile)) { showMsg("Enter a valid 10-digit mobile number."); return; }
     if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) { showMsg("Enter a valid email address."); return; }
     if (!form.aadhar || form.aadhar.length !== 4) { showMsg("Enter last 4 digits of Aadhaar."); return; }
@@ -383,10 +383,10 @@ export default function PatientRegister({ onBack }) {
         </div>
 
         <div>
-          <label style={labelStyle}>EMAIL {!form.mobile && "*"}</label>
+          <label style={labelStyle}>EMAIL *</label>
           <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="you@example.com" style={inputStyle} />
           <div style={{ color: "#8ba8c8", fontSize: 11, marginTop: 4 }}>
-            Give at least one — mobile or email — so we can send your Patient ID.
+            Your Patient ID will be sent here — please double-check it's correct.
           </div>
         </div>
 

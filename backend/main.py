@@ -87,9 +87,10 @@ async def send_email(to_email: str, subject: str, body: str) -> bool:
         return False
 
 async def notify_patient(mobile: str, email: str, uid: str, full_name: str) -> None:
-    """Send the Patient ID to whichever contact method the patient provided."""
-    if mobile:
-        await send_sms(mobile, uid)
+    """Send the Patient ID to the patient.
+    NOTE: SMS via Fast2SMS is disabled — it requires DLT (govt.) registration
+    with a registered business entity, which isn't feasible for this project.
+    Email (Brevo) is the active notification channel."""
     if email:
         await send_email(
             to_email=email,
@@ -362,8 +363,8 @@ async def patient_register(data: dict):
     aadhar_last4 = str(data["aadhar_last4"]).strip()
     password     = str(data["password"]).strip()
 
-    if not mobile and not email:
-        return {"success": False, "message": "Please provide a mobile number or an email address."}
+    if not email:
+        return {"success": False, "message": "Please provide an email address (used to send your Patient ID)."}
     if mobile and (not mobile.isdigit() or len(mobile) != 10):
         return {"success": False, "message": "Enter a valid 10-digit mobile number."}
     if email and "@" not in email:
