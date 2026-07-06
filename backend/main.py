@@ -8,6 +8,8 @@ import google.generativeai as genai
 import hashlib
 import httpx
 import uuid
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime, timezone
 
 load_dotenv()
@@ -24,11 +26,16 @@ app.add_middleware(
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
+GMAIL_USER = os.getenv("GMAIL_USER")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # ── SMS Helper ───────────────────────────────────────────────
-async def send_sms(mobile: str, otp_or_id: str) -> bool:
-    """Send SMS via Fast2SMS OTP route"""
+async def send_sms(mobile: str, message: str) -> bool:
+    """Send SMS via Fast2SMS OTP route.
+    NOTE: Fast2SMS's OTP route expects a short code/value to slot into a
+    pre-approved template (e.g. "Your OTP: {#var#}") — it is NOT meant for
+    arbitrary sentences. Keep `message` short (ideally just the code/ID)."""
     if not FAST2SMS_KEY:
         print("[SMS] FAST2SMS_API_KEY not set, skipping SMS")
         return False
@@ -38,17 +45,56 @@ async def send_sms(mobile: str, otp_or_id: str) -> bool:
                 "https://www.fast2sms.com/dev/bulkV2",
                 headers={"authorization": FAST2SMS_KEY},
                 params={
-                    "variables_values": otp_or_id,
-                    "route": "otp",        # ← "q" এর বদলে "otp"
+                    "variables_values": message,
+                    "route": "otp",
                     "numbers": mobile,
                 }
             )
             data = res.json()
-            print(f"[Fast2SMS] {data}")
-            return data.get("return", False)
+            print(f"[Fast2SMS] status={res.status_code} response={data}")
+            return bool(data.get("return", False))
     except Exception as e:
         print(f"[Fast2SMS Error] {e}")
         return False
+
+# ── Email Helper ─────────────────────────────────────────────
+def send_email(to_email: str, subject: str, body: str) -> bool:
+    """Send a plain-text email via Gmail SMTP (requires a Gmail App Password,
+    not the normal Gmail login password)."""
+    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
+        print("[Email] GMAIL_USER / GMAIL_APP_PASSWORD not set, skipping email")
+        return False
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = GMAIL_USER
+        msg["To"] = to_email
+        msg.set_content(body)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as smtp:
+            smtp.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            smtp.send_message(msg)
+        print(f"[Email] Sent to {to_email}")
+        return True
+    except Exception as e:
+        print(f"[Email Error] {e}")
+        return False
+
+async def notify_patient(mobile: str, email: str, uid: str, full_name: str) -> None:
+    """Send the Patient ID to whichever contact method the patient provided."""
+    if mobile:
+        await send_sms(mobile, uid)
+    if email:
+        send_email(
+            to_email=email,
+            subject="Your DHIS Patient ID",
+            body=(
+                f"Hi {full_name},\n\n"
+                f"Your DHIS Patient ID is: {uid}\n\n"
+                f"Please keep this ID safe — you'll need it to log in and access your health records.\n\n"
+                f"— DHIS, District Health Intelligence System"
+            ),
+        )
+
 # ── Password helper ──────────────────────────────────────────
 def _hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
@@ -299,25 +345,35 @@ def get_hospital_attendance(hospital_id: int):
 # ── Patient Routes ────────────────────────────────────────────
 @app.post("/patient/register")
 async def patient_register(data: dict):
-    required = ["full_name", "aadhar_last4", "age", "gender", "address", "mobile", "password"]
+    required = ["full_name", "aadhar_last4", "age", "gender", "address", "password"]
     for field in required:
         if not data.get(field):
             return {"success": False, "message": f"'{field}' is required."}
 
-    mobile       = str(data["mobile"]).strip()
+    mobile       = str(data.get("mobile") or "").strip()
+    email        = str(data.get("email") or "").strip().lower()
     aadhar_last4 = str(data["aadhar_last4"]).strip()
     password     = str(data["password"]).strip()
 
-    if not mobile.isdigit() or len(mobile) != 10:
+    if not mobile and not email:
+        return {"success": False, "message": "Please provide a mobile number or an email address."}
+    if mobile and (not mobile.isdigit() or len(mobile) != 10):
         return {"success": False, "message": "Enter a valid 10-digit mobile number."}
+    if email and "@" not in email:
+        return {"success": False, "message": "Enter a valid email address."}
     if not aadhar_last4.isdigit() or len(aadhar_last4) != 4:
         return {"success": False, "message": "Enter last 4 digits of Aadhaar."}
     if len(password) < 6:
         return {"success": False, "message": "Password must be at least 6 characters."}
 
-    existing = supabase.table("patients").select("uid").eq("mobile", mobile).execute()
-    if existing.data:
-        return {"success": False, "message": "This mobile number is already registered. Please login."}
+    if mobile:
+        existing = supabase.table("patients").select("uid").eq("mobile", mobile).execute()
+        if existing.data:
+            return {"success": False, "message": "This mobile number is already registered. Please login."}
+    if email:
+        existing = supabase.table("patients").select("uid").eq("email", email).execute()
+        if existing.data:
+            return {"success": False, "message": "This email is already registered. Please login."}
 
     district_id = None
     if data.get("district_name"):
@@ -332,7 +388,8 @@ async def patient_register(data: dict):
             "age":          int(data["age"]),
             "gender":       data["gender"],
             "blood_group":  data.get("blood_group") or None,
-            "mobile":       mobile,
+            "mobile":       mobile or None,
+            "email":        email or None,
             "address":      data["address"].strip(),
             "district_id":  district_id,
             "password":     _hash_password(password),
@@ -343,11 +400,8 @@ async def patient_register(data: dict):
         patient = res.data[0]
         uid = patient["uid"]
 
-        # ── SMS পাঠাও registration-এর পরে ──────────────────
-        # ── SMS পাঠাও registration-এর পরে ──────────────────
-        sms_text = f"DHIS Patient ID: {uid} | Name: {patient['full_name']} | Keep this ID safe to access your health records."
-        await send_sms(mobile, sms_text)
-        # ────────────────────────────────────────────────────
+        # ── Notify patient with their ID, via whichever contact they gave ──
+        await notify_patient(mobile, email, uid, patient["full_name"])
 
         patient.pop("password", None)
         return {"success": True, "patient": patient, "uid": uid}
