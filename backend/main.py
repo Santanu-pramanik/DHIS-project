@@ -8,8 +8,6 @@ import google.generativeai as genai
 import hashlib
 import httpx
 import uuid
-import smtplib
-from email.message import EmailMessage
 from datetime import datetime, timezone
 
 load_dotenv()
@@ -26,8 +24,9 @@ app.add_middleware(
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 FAST2SMS_KEY = os.getenv("FAST2SMS_API_KEY")
-GMAIL_USER = os.getenv("GMAIL_USER")
-GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+BREVO_SENDER_EMAIL = os.getenv("BREVO_SENDER_EMAIL")
+BREVO_SENDER_NAME = os.getenv("BREVO_SENDER_NAME", "DHIS")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # ── SMS Helper ───────────────────────────────────────────────
@@ -57,24 +56,32 @@ async def send_sms(mobile: str, message: str) -> bool:
         print(f"[Fast2SMS Error] {e}")
         return False
 
-# ── Email Helper ─────────────────────────────────────────────
-def send_email(to_email: str, subject: str, body: str) -> bool:
-    """Send a plain-text email via Gmail SMTP (requires a Gmail App Password,
-    not the normal Gmail login password)."""
-    if not GMAIL_USER or not GMAIL_APP_PASSWORD:
-        print("[Email] GMAIL_USER / GMAIL_APP_PASSWORD not set, skipping email")
+# ── Email Helper (Brevo HTTP API — works even where SMTP ports are blocked) ──
+async def send_email(to_email: str, subject: str, body: str) -> bool:
+    if not BREVO_API_KEY or not BREVO_SENDER_EMAIL:
+        print("[Email] BREVO_API_KEY / BREVO_SENDER_EMAIL not set, skipping email")
         return False
     try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = GMAIL_USER
-        msg["To"] = to_email
-        msg.set_content(body)
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as smtp:
-            smtp.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            smtp.send_message(msg)
-        print(f"[Email] Sent to {to_email}")
-        return True
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "accept": "application/json",
+                    "api-key": BREVO_API_KEY,
+                    "content-type": "application/json",
+                },
+                json={
+                    "sender": {"name": BREVO_SENDER_NAME, "email": BREVO_SENDER_EMAIL},
+                    "to": [{"email": to_email}],
+                    "subject": subject,
+                    "textContent": body,
+                },
+            )
+        if resp.status_code in (200, 201):
+            print(f"[Email] Sent to {to_email}")
+            return True
+        print(f"[Email Error] status={resp.status_code} response={resp.text}")
+        return False
     except Exception as e:
         print(f"[Email Error] {e}")
         return False
@@ -84,7 +91,7 @@ async def notify_patient(mobile: str, email: str, uid: str, full_name: str) -> N
     if mobile:
         await send_sms(mobile, uid)
     if email:
-        send_email(
+        await send_email(
             to_email=email,
             subject="Your DHIS Patient ID",
             body=(
