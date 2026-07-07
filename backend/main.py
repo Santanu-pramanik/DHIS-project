@@ -408,6 +408,12 @@ async def patient_register(data: dict):
         patient = res.data[0]
         uid = patient["uid"]
 
+        # Re-fetch with the district joined so the frontend gets the name
+        # right away (the insert response above doesn't include the join).
+        full_res = supabase.table("patients").select("*, districts(name)").eq("uid", uid).execute()
+        if full_res.data:
+            patient = full_res.data[0]
+
         # ── Notify patient with their ID, via whichever contact they gave ──
         await notify_patient(mobile, email, uid, patient["full_name"])
 
