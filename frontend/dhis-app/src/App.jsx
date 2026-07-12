@@ -3,7 +3,6 @@ import axios from "axios"
 import LandingPage from "./LandingPage"
 import HospitalPage from "./HospitalPage"
 import AIAssistant from "./AIAssistant"
-import PublicDashboard from "./PublicDashboard"
 import DoctorLogin from "./DoctorLogin"
 import DoctorDashboard from "./DoctorDashboard"
 import HospitalLogin from "./HospitalLogin"
@@ -46,7 +45,7 @@ const RLEGEND = ({ payload }) => (
 
 export default function App() {
   const [page, setPage] = useState("dashboard")
-  const [currentPage, setCurrentPage] = useState("dashboard")
+  const [currentPage, setCurrentPage] = useState("landing")
   const [districts, setDistricts] = useState([])
   const [selectedDistrict, setSelectedDistrict] = useState(null)
   const [analysis, setAnalysis] = useState(null)
@@ -591,21 +590,8 @@ if (currentPage === "landing") {
     if (p === "patient") setShowPatientReg(true)
     else if (p === "doctor") setCurrentPage("doctor")
     else if (p === "hospital") setCurrentPage("hospital")
-    else if (p === "dashboard") setCurrentPage("dashboard")
     else { setCurrentPage("app"); setPage(p) }
   }} />
-}
-if (currentPage === "dashboard") {
-  return <PublicDashboard
-    onBack={() => setCurrentPage("landing")}
-    surveillanceContent={dashboardPage}
-    onNavigate={(p) => {
-      if (p === "patient") setShowPatientReg(true)
-      else if (p === "doctor") setCurrentPage("doctor")
-      else if (p === "hospital") setCurrentPage("hospital")
-      else { setCurrentPage("app"); setPage(p) }
-    }}
-  />
 }
 if (currentPage === "doctor") {
   if (!doctorLoggedIn) {
