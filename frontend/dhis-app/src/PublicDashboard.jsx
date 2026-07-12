@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   LayoutDashboard, Map, Activity, Building2, Stethoscope, AlertTriangle,
-  FileDown, ArrowLeft, ShieldCheck, LogIn,
+  FileDown, ShieldCheck, LogIn,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
@@ -22,14 +22,13 @@ const NAV = [
   { key: "reports", label: "Reports", icon: FileDown },
 ];
 
-export default function PublicDashboard({ onBack, onNavigate }) {
+export default function PublicDashboard({ onBack, onNavigate, surveillanceContent }) {
   const [tab, setTab] = useState("overview");
   const [districts, setDistricts] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [casesByDistrict, setCasesByDistrict] = useState({}); // { [id]: [cases...] }
   const [loading, setLoading] = useState(true);
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -42,7 +41,6 @@ export default function PublicDashboard({ onBack, onNavigate }) {
         setDistricts(dRes.data || []);
         setHospitals(hRes.data || []);
         setDoctors(drRes.data || []);
-        setSelectedDistrict(dRes.data?.[0]?.id ?? null);
 
         const casePairs = await Promise.all(
           (dRes.data || []).map(async (d) => {
@@ -86,10 +84,6 @@ export default function PublicDashboard({ onBack, onNavigate }) {
     ...d,
     total: (casesByDistrict[d.id] || []).reduce((s, c) => s + (c.case_count || 0), 0),
   })).sort((a, b) => b.total - a.total);
-
-  const surveillanceData = (casesByDistrict[selectedDistrict] || [])
-    .map((c) => ({ name: c.disease_type, cases: c.case_count }))
-    .sort((a, b) => b.cases - a.cases);
 
   const downloadReport = () => {
     const rows = [["District", "Total Cases", "Hospitals", "Doctors"]];
@@ -157,12 +151,6 @@ export default function PublicDashboard({ onBack, onNavigate }) {
     <div style={wrapStyle}>
       {/* SIDEBAR */}
       <div style={sidebarStyle}>
-        <button onClick={onBack} style={{
-          display: "flex", alignItems: "center", gap: 8, background: "none", border: "none",
-          color: "#8ba8c8", cursor: "pointer", fontSize: 13, marginBottom: 20, padding: "6px 4px",
-        }}>
-          <ArrowLeft size={15} /> Home
-        </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 4px", marginBottom: 22 }}>
           <Activity size={20} color="#1D9E75" />
@@ -267,36 +255,10 @@ export default function PublicDashboard({ onBack, onNavigate }) {
             )}
 
             {tab === "surveillance" && (
-              <div>
-                <h2 style={{ marginTop: 0 }}>Disease Surveillance</h2>
-                <select
-                  value={selectedDistrict || ""}
-                  onChange={(e) => setSelectedDistrict(Number(e.target.value))}
-                  style={{
-                    padding: "10px 14px", borderRadius: 10, marginBottom: 18,
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
-                    color: "#fff", fontSize: 13,
-                  }}
-                >
-                  {districts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                <div style={cardStyle}>
-                  {surveillanceData.length === 0 ? (
-                    <div style={{ color: "#8ba8c8" }}>No case data for this district yet.</div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={360}>
-                      <BarChart data={surveillanceData} layout="vertical" margin={{ left: 40 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                        <XAxis type="number" tick={{ fill: "#8ba8c8", fontSize: 11 }} />
-                        <YAxis type="category" dataKey="name" tick={{ fill: "#8ba8c8", fontSize: 12 }} width={120} />
-                        <Tooltip contentStyle={{ background: "#1a2236", border: "1px solid rgba(255,255,255,0.1)" }} />
-                        <Bar dataKey="cases" radius={[0, 6, 6, 0]}>
-                          {surveillanceData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
+              <div style={{ margin: "-28px -32px" }}>
+                {surveillanceContent ? surveillanceContent : (
+                  <div style={{ padding: 32, color: "#8ba8c8" }}>Disease surveillance data is unavailable right now.</div>
+                )}
               </div>
             )}
 
