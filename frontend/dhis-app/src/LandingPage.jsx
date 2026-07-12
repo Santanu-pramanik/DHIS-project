@@ -110,6 +110,13 @@ export default function LandingPage({ onNavigate }) {
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [float, setFloat] = useState({ x: 0, y: 0, r: 0 });
   const animRef = useRef();
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 860);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 860);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     let frame = 0;
@@ -218,7 +225,7 @@ export default function LandingPage({ onNavigate }) {
       <div style={{ position: "absolute", bottom: "-10%", left: "5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(29,158,117,0.10) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       {/* Navbar */}
-      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 48px", position: "relative", zIndex: 10, flexShrink: 0 }}>
+      <nav style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, padding: isMobile ? "14px 16px" : "16px 48px", position: "relative", zIndex: 10, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg, #378ADD, #1D9E75)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Activity size={20} color="#fff" />
@@ -228,39 +235,39 @@ export default function LandingPage({ onNavigate }) {
             <div style={{ color: "#5b8fc9", fontSize: 10, letterSpacing: 1 }}>HEALTH INTELLIGENCE</div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={() => onNavigate("dashboard")} style={{ padding: "9px 22px", borderRadius: 10, border: "1px solid rgba(55,138,221,0.4)", background: "rgba(55,138,221,0.08)", color: "#93c5fd", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(55,138,221,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(55,138,221,0.08)")}>
+        <div style={{ display: "flex", gap: isMobile ? 8 : 10, flexWrap: "wrap", justifyContent: isMobile ? "flex-start" : "flex-end" }}>
+          <button onClick={() => onNavigate("dashboard")} style={{ padding: isMobile ? "8px 14px" : "9px 22px", borderRadius: 10, border: "1px solid rgba(55,138,221,0.4)", background: "rgba(55,138,221,0.08)", color: "#93c5fd", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(55,138,221,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(55,138,221,0.08)")}>
             <LayoutDashboard size={14} /> Dashboard
           </button>
-          <button onClick={() => onNavigate("admin")} style={{ padding: "9px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #378ADD, #2563eb)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+          <button onClick={() => onNavigate("admin")} style={{ padding: isMobile ? "8px 14px" : "9px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #378ADD, #2563eb)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
             <ShieldCheck size={14} /> Admin Panel
           </button>
-          <button onClick={() => onNavigate("doctor")} style={{ padding: "9px 22px", borderRadius: 10, border: "1px solid rgba(29,158,117,0.4)", background: "rgba(29,158,117,0.08)", color: "#6ee7b7", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.08)")}>
+          <button onClick={() => onNavigate("doctor")} style={{ padding: isMobile ? "8px 14px" : "9px 22px", borderRadius: 10, border: "1px solid rgba(29,158,117,0.4)", background: "rgba(29,158,117,0.08)", color: "#6ee7b7", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(29,158,117,0.08)")}>
             <Stethoscope size={14} /> Doctor Login
           </button>
-          <button onClick={() => onNavigate("hospital")} style={{ padding: "9px 22px", borderRadius: 10, border: "1px solid rgba(245,158,11,0.4)", background: "rgba(245,158,11,0.08)", color: "#fbbf24", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.08)")}>
+          <button onClick={() => onNavigate("hospital")} style={{ padding: isMobile ? "8px 14px" : "9px 22px", borderRadius: 10, border: "1px solid rgba(245,158,11,0.4)", background: "rgba(245,158,11,0.08)", color: "#fbbf24", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }} onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.2)")} onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(245,158,11,0.08)")}>
             <Building2 size={14} /> Hospital Login
           </button>
         </div>
       </nav>
 
       {/* Hero */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px 24px", flex: 1, position: "relative", zIndex: 5, overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "center", justifyContent: "space-between", padding: isMobile ? "16px 20px 24px" : "20px 48px 24px", flex: 1, position: "relative", zIndex: 5, overflow: "hidden", gap: isMobile ? 32 : 0 }}>
         {/* Left content */}
-        <div style={{ maxWidth: 560, flex: 1 }}>
+        <div style={{ maxWidth: isMobile ? "100%" : 560, flex: 1, textAlign: isMobile ? "center" : "left" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 20, background: "rgba(55,138,221,0.12)", border: "1px solid rgba(55,138,221,0.25)", marginBottom: 24 }}>
             <MapPin size={13} color="#378ADD" />
             <span style={{ color: "#93c5fd", fontSize: 12, fontWeight: 600 }}>West Bengal, India</span>
           </div>
-          <h1 style={{ fontSize: 52, fontWeight: 800, color: "#fff", lineHeight: 1.1, marginBottom: 20 }}>
+          <h1 style={{ fontSize: isMobile ? 34 : 52, fontWeight: 800, color: "#fff", lineHeight: 1.1, marginBottom: 20 }}>
             District{" "}
             <span style={{ background: "linear-gradient(135deg, #378ADD, #1D9E75)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Health</span>
             <br />Intelligence<br />System
           </h1>
-          <p style={{ fontSize: 16, color: "#8ba8c8", lineHeight: 1.7, marginBottom: 36, maxWidth: 440 }}>
+          <p style={{ fontSize: 16, color: "#8ba8c8", lineHeight: 1.7, marginBottom: 36, maxWidth: isMobile ? "100%" : 440, marginLeft: isMobile ? "auto" : 0, marginRight: isMobile ? "auto" : 0 }}>
             Real-time district-level health data analytics for West Bengal. Monitor disease outbreaks, track hospital capacity, and optimize doctor deployment.
           </p>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start" }}>
             <button onClick={() => onNavigate("dashboard")} style={{ padding: "14px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #378ADD, #1D9E75)", color: "#fff", cursor: "pointer", fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
               View Dashboard <ArrowRight size={16} />
             </button>
@@ -268,7 +275,7 @@ export default function LandingPage({ onNavigate }) {
               Admin Login
             </button>
           </div>
-          <div style={{ display: "flex", gap: 32, marginTop: 48 }}>
+          <div style={{ display: "flex", gap: 32, marginTop: 48, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
             {[["18", "Districts"], ["20K+", "Cases Tracked"], ["18+", "Diseases"]].map(([v, l]) => (
               <div key={l}>
                 <div style={{ fontSize: 28, fontWeight: 800, background: "linear-gradient(135deg, #378ADD, #1D9E75)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{v}</div>
@@ -279,6 +286,7 @@ export default function LandingPage({ onNavigate }) {
         </div>
 
         {/* Right - Animated West Bengal Map */}
+        {!isMobile && (
         <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", position: "relative", height: "100%" }}>
           <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", border: "1px solid rgba(55,138,221,0.15)", transform: `scale(${1 + Math.abs(Math.sin(pulse * 0.7)) * 0.12})`, transition: "transform 0.3s ease-out" }} />
           <div style={{ position: "absolute", width: 340, height: 340, borderRadius: "50%", border: "1px solid rgba(55,138,221,0.1)", transform: `scale(${1 + Math.abs(Math.sin(pulse * 0.7)) * 0.12})`, transition: "transform 0.3s ease-out" }} />
@@ -353,13 +361,14 @@ export default function LandingPage({ onNavigate }) {
             </div>
           </div>
         </div>
+        )}
       </div>
       
 {/* ── PATIENT REGISTRATION CARD ── */}
       <div style={{
         display: "flex",
         justifyContent: "center",
-        padding: "0 48px 60px",
+        padding: isMobile ? "0 16px 40px" : "0 48px 60px",
         position: "relative",
         zIndex: 5,
       }}>
@@ -369,15 +378,16 @@ export default function LandingPage({ onNavigate }) {
           WebkitBackdropFilter: "blur(16px)",
           border: "1px solid rgba(255,255,255,0.12)",
           borderRadius: 20,
-          padding: "36px 48px",
+          padding: isMobile ? "28px 24px" : "36px 48px",
           width: "100%",
           maxWidth: 900,
           position: "relative",
           overflow: "hidden",
           display: "flex",
-          alignItems: "center",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "stretch" : "center",
           justifyContent: "space-between",
-          gap: 40,
+          gap: isMobile ? 24 : 40,
         }}>
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, #378ADD, #1D9E75)" }} />
 
@@ -391,7 +401,7 @@ export default function LandingPage({ onNavigate }) {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 24, flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 24, flexShrink: 0, justifyContent: isMobile ? "space-between" : "flex-start" }}>
             {[["18", "Districts"], ["20K+", "Patients"], ["24/7", "Support"]].map(([v, l]) => (
               <div key={l} style={{ textAlign: "center" }}>
                 <div style={{ color: "#378ADD", fontWeight: 800, fontSize: 22 }}>{v}</div>
@@ -403,7 +413,7 @@ export default function LandingPage({ onNavigate }) {
           <div style={{ flexShrink: 0 }}>
             <button
               onClick={() => onNavigate("patient")}
-              style={{ padding: "14px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #378ADD, #1D9E75)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}
+              style={{ width: isMobile ? "100%" : "auto", padding: "14px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #378ADD, #1D9E75)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}
               onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
               onMouseLeave={e => e.currentTarget.style.opacity = "1"}
             >
@@ -419,18 +429,18 @@ export default function LandingPage({ onNavigate }) {
       
 
       {/* ── TEAM SECTION ── */}
-      <div style={{ padding: "72px 48px 80px", position: "relative", zIndex: 5 }}>
+      <div style={{ padding: isMobile ? "48px 16px 56px" : "72px 48px 80px", position: "relative", zIndex: 5 }}>
         {/* Section header */}
         <div style={{ textAlign: "center", marginBottom: 56 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(55,138,221,0.1)", border: "1px solid rgba(55,138,221,0.2)", marginBottom: 16 }}>
             <span style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, letterSpacing: 1.5 }}>THE PEOPLE BEHIND DHIS</span>
           </div>
-          <h2 style={{ color: "#fff", fontSize: 38, fontWeight: 800, margin: "0 0 12px", letterSpacing: -0.5 }}>Meet Our Team</h2>
+          <h2 style={{ color: "#fff", fontSize: isMobile ? 28 : 38, fontWeight: 800, margin: "0 0 12px", letterSpacing: -0.5 }}>Meet Our Team</h2>
           <p style={{ color: "#8ba8c8", fontSize: 15, margin: 0 }}>District Health Intelligence System Development Team</p>
         </div>
 
         {/* Cards grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, maxWidth: 1120, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, maxWidth: 1120, margin: "0 auto" }}>
           {TEAM.map((member, idx) => (
             <div
               key={member.name}
@@ -501,7 +511,7 @@ export default function LandingPage({ onNavigate }) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "25px 48px", borderTop: "1px solid rgba(55,138,221,0.15)", background: "rgba(13,21,38,0.95)", textAlign: "center" }}>
+      <div style={{ padding: isMobile ? "20px 20px" : "25px 48px", borderTop: "1px solid rgba(55,138,221,0.15)", background: "rgba(13,21,38,0.95)", textAlign: "center" }}>
         <h3 style={{ color: "#fff", marginBottom: "10px", fontSize: "20px" }}>District Health Intelligence System (DHIS)</h3>
         <p style={{ color: "#8ba8c8", fontSize: "14px", marginBottom: "15px" }}>Real-time health monitoring and disease outbreak tracking system for West Bengal.</p>
         <p style={{ color: "#5b8fc9", fontSize: "12px", margin: 0 }}>© 2026 DHIS Project Team. All Rights Reserved.</p>
