@@ -46,7 +46,7 @@ const RLEGEND = ({ payload }) => (
 
 export default function App() {
   const [page, setPage] = useState("dashboard")
-  const [currentPage, setCurrentPage] = useState("landing")
+  const [currentPage, setCurrentPage] = useState("dashboard")
   const [districts, setDistricts] = useState([])
   const [selectedDistrict, setSelectedDistrict] = useState(null)
   const [analysis, setAnalysis] = useState(null)
@@ -598,6 +598,7 @@ if (currentPage === "landing") {
 if (currentPage === "dashboard") {
   return <PublicDashboard
     onBack={() => setCurrentPage("landing")}
+    surveillanceContent={dashboardPage}
     onNavigate={(p) => {
       if (p === "patient") setShowPatientReg(true)
       else if (p === "doctor") setCurrentPage("doctor")
